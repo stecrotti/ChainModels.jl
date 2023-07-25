@@ -7,4 +7,4 @@ using Distributions
 
 include("accumulators.jl")
 include("chainmodel.jl")
-include("probability.jl")
+include("overrides.jl")

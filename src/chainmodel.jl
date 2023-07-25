@@ -10,39 +10,39 @@ struct ChainModel{T} <: AbstractChainModel{T}
     end
 end
 
-accumulate_left(model::ChainModel) = accumulate_left(model.f)
-accumulate_right(model::ChainModel) = accumulate_right(model.f)
-accumulate_middle(model::ChainModel) = accumulate_middle(model.f)
+accumulate_left(chain::ChainModel) = accumulate_left(chain.f)
+accumulate_right(chain::ChainModel) = accumulate_right(chain.f)
+accumulate_middle(chain::ChainModel) = accumulate_middle(chain.f)
 
-length(model::ChainModel) = length(model.f) + 1
+length(chain::ChainModel) = length(chain.f) + 1
 
-nstates(model::ChainModel) = nstates(model.f)
+nstates(chain::ChainModel) = nstates(chain.f)
 
-function show(io::IO, model::ChainModel{T}) where T
-    L = length(model)
+function show(io::IO, chain::ChainModel{T}) where T
+    L = length(chain)
     println(io, "ChainModel{$T} with $L variables")
 end
 
-function evaluate(model::ChainModel, x)
-    L = length(model)
+function evaluate(chain::ChainModel, x)
+    L = length(chain)
     length(x) == L || throw(ArgumentError("Length of `x` should match the number of variables. Got $(length(x)) and $L."))
-    prod(model.f[i][x[i],x[i+1]] for i in eachindex(model.f); init=1.0) 
+    prod(chain.f[i][x[i],x[i+1]] for i in eachindex(chain.f); init=1.0) 
 end
 
-normalization(model::ChainModel; l = accumulate_left(model.f)) = sum(last(l))
+normalization(chain::ChainModel; l = accumulate_left(chain.f)) = sum(last(l))
 
-function marginals(model::ChainModel;
-        l = accumulate_left(model), r = accumulate_right(model))
-    return map(1:length(model)) do i
-        pᵢ = l[i-1]' .* r[i+1]
+function marginals(chain::ChainModel;
+        l = accumulate_left(chain), r = accumulate_right(chain))
+    return map(1:length(chain)) do i
+        pᵢ = vec( l[i-1]' .* r[i+1] )
         pᵢ ./= sum(pᵢ)
     end
 end 
 
-function neighbor_marginals(model::ChainModel;
-        l = accumulate_left(model), r = accumulate_right(model))
-    return map(1:length(model)-1) do i
-        pᵢ = l[i-1]' .* model.f[i] .* r[i+2]'
+function neighbor_marginals(chain::ChainModel;
+        l = accumulate_left(chain), r = accumulate_right(chain))
+    return map(1:length(chain)-1) do i
+        pᵢ = l[i-1]' .* chain.f[i] .* r[i+2]'
         pᵢ ./= sum(pᵢ)
     end
 end
