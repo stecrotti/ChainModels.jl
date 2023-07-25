@@ -1,6 +1,10 @@
 using ChainModels
 using Test
+using LogarithmicNumbers
+using OffsetArrays
+using InvertedIndices
+using Distributions
 
-@testset "ChainModels.jl" begin
-    # Write your tests here.
-end
+include("accumulators.jl")
+include("chainmodel.jl")
+include("probability.jl")
