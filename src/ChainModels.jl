@@ -6,14 +6,16 @@ import LinearAlgebra: mul!
 import Random: AbstractRNG
 import Distributions: DiscreteMultivariateDistribution, Sampleable, Multivariate, Discrete, 
     logpdf, pdf, _rand!, eltype, sampler, _logpdf, loglikelihood, mean, var, cov, entropy
+import StatsBase: kldivergence
 
 export AbstractChainModel, ChainModel, nstates,
         accumulate_left!, accumulate_right!, accumulate_left,
         accumulate_right, accumulate_middle, evaluate, normalization,
         marginals, neighbor_marginals, pair_marginals,
         loglikelihood_gradient, loglikelihood_gradient!,
-        # overrides from Distributions.jl
-        logpdf, loglikelihood, pdf, mean, var, cov, entropy
+        # overrides from Distributions, StatsBase
+        logpdf, loglikelihood, pdf, mean, var, cov, entropy,
+        kldivergence
         
 
 

@@ -81,8 +81,15 @@ function cov(chain::ChainModel{T}; m = marginals(chain), p = pair_marginals(chai
     c
 end
 
-function entropy(chain::ChainModel; p = neighbor_marginals(chain))
+function entropy(chain::ChainModel; nmarg = neighbor_marginals(chain))
     logZ = log(normalization(chain)) 
-    avg_logf = sum(expectation((xᵢ,xᵢ₊₁)->log(chain.f[i][xᵢ,xᵢ₊₁]), p[i]) for i in eachindex(p))
+    avg_logf = sum(expectation((xᵢ,xᵢ₊₁)->log(chain.f[i][xᵢ,xᵢ₊₁]), nmarg[i]) for i in eachindex(nmarg))
     return logZ - avg_logf
+end
+
+function kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_marginals(p))
+    plogp = - entropy(p; nmarg)
+    plogq = - log(normalization(q)) + 
+        sum(expectation((xᵢ,xᵢ₊₁)->log(q.f[i][xᵢ,xᵢ₊₁]), nmarg[i]) for i in eachindex(nmarg))
+    return plogp - plogq
 end

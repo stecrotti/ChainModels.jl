@@ -35,10 +35,34 @@ end
     @test S ≈ S_exhaust
 end
 
+@testset "KL divergence" begin
+    qs = (3, 2, 4, 5, 8)
+    p = ChainModel([rand(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)])
+    q = ChainModel([rand(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)])
+    P = [evaluate(p, x) for x in Iterators.product((1:q for q in qs)...)]
+    P ./= sum(P)
+    Q = [evaluate(q, x) for x in Iterators.product((1:q for q in qs)...)]
+    Q ./= sum(Q)
+    kl = kldivergence(p, q)
+    kl_exact = sum(px*log(px/qx) for (px, qx) in zip(P, Q))
+    @test kl ≈ kl_exact
+end
+
 @testset "Gradient of log-likelihood" begin
-    x = [rand(chain) for _ in 1:20]
+    x = [rand(chain) for _ in 1:100]
     ll(f) = loglikelihood(ChainModel(f), x)
     df_true = grad(forward_fdm(4, 1), ll, f)[1]
     df = loglikelihood_gradient(chain, x)
     @test df ≈ df_true
 end
+
+# x = [rand(chain) for _ in 1:10^4]
+# fhat = [rand(size(fi)...) .+ 1 for fi in f]
+# η = 1e-1 / length(x)
+# for _ in 1:10^3
+#     loglikelihood_gradient!(df, chain, x)
+#     for (fi, dfi) in zip(fhat, df)
+#         fi .+= η*dfi
+#     end
+#     println("KL: ", kldivergence(chain, ChainModel(fhat)))
+# end
