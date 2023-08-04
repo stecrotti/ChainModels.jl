@@ -37,3 +37,15 @@ end
     @test all(float.(r1) ≈ float.(r2) for (r1,r2) in zip(r_exhaust, r))
 end
 
+@testset "Accumulate middle" begin
+    m_exhaust = OffsetArray([zeros(ULogarithmic, q1, q2) for q1 in nstates(f)[1:end-1], q2 in nstates(f)[2:end]], 0, +1) 
+    for i in axes(m_exhaust, 1)
+        for j in i+1:L
+            X = Iterators.product((1:q for q in nstates(model)[i:j])...)
+            for x in X
+                m_exhaust[i,j][first(x),last(x)] += evaluate_partial(model, x, i, j-1)
+            end
+        end
+    end
+    @test all(float.(m1) ≈ float.(m2) for (m1,m2) in zip(m_exhaust, m))
+end

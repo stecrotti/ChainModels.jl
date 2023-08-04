@@ -26,12 +26,12 @@ function _rand!(rng::AbstractRNG, chain::ChainModel{T}, x::AbstractVector{<:Inte
     x
 end
 
-# function _expectation(f, p::Array{<:Real, N}) where N
+# function expectation(f, p::Array{<:Real, N}) where N
 #     sum(f(x...) * p[x...] for x in Iterators.product(axes(p)...))
 # end
-# _expectation(p) = _expectation(identity, p)
+# expectation(p) = expectation(identity, p)
 
-expectation(f, p::Matrix{<:Real}) = sum(f(xi, xj) * p[xi, xj] for xi in axes(p,1), xj in axes(p,2))
+expectation(f, p::Matrix{<:Real}) = sum(f(xi,xj) * p[xi, xj] for xi in axes(p,1), xj in axes(p,2))
 expectation(f, p::Vector{<:Real}) = sum(f(xi) * p[xi] for xi in eachindex(p))
 expectation(p) = expectation(identity, p)
 
@@ -41,6 +41,20 @@ end
 
 function var(chain::ChainModel; p = marginals(chain))
     return [expectation(abs2, pᵢ) - expectation(pᵢ)^2 for pᵢ in p]
+end
+
+function cov(chain::ChainModel{T}; m = marginals(chain), p = pair_marginals(chain)) where T
+    L = length(chain)
+    c = zeros(T, L, L)
+    for i in axes(c, 1)
+        pᵢ = m[i]
+        c[i,i] = expectation(abs2, pᵢ) - expectation(pᵢ)^2
+        for j in i+1:L
+            c[i,j] = expectation(*, p[i,j]) - expectation(m[i])*expectation(m[j])
+            c[j,i] = c[i,j]
+        end
+    end
+    c
 end
 
 function entropy(chain::ChainModel; p = neighbor_marginals(chain))

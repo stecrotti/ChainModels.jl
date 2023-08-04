@@ -46,3 +46,18 @@ function neighbor_marginals(chain::ChainModel;
         pᵢ ./= sum(pᵢ)
     end
 end
+
+function pair_marginals(chain::ChainModel{T};
+        l = accumulate_left(chain), r = accumulate_right(chain), 
+        m = accumulate_middle(chain)) where T
+    L = length(chain)
+    p = [zeros(T, q1, q2) for q1 in nstates(chain), q2 in nstates(chain)]
+    for i in 1:L-1
+        for j in i+1:L
+            p[i,j] .= l[i-1]' .* m[i,j] .* r[j+1]'
+            p[i,j] ./= sum(p[i,j])
+            p[j,i] .= p[i,j]'
+        end
+    end
+    p
+end

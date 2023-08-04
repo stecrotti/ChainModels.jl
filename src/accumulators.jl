@@ -34,7 +34,7 @@ function accumulate_middle!(m, f::Vector{Matrix{T}}) where {T<:Real}
         m[i,i+1] .= f[i]
     end
     for j in Iterators.drop(axes(m,2), 1)
-        for i in reverse(1:j-1)
+        for i in reverse(1:j-2)
             mul!(m[i, j], f[i], m[i+1, j])
         end
     end
@@ -42,6 +42,6 @@ function accumulate_middle!(m, f::Vector{Matrix{T}}) where {T<:Real}
 end
 
 function accumulate_middle(f::Vector{Matrix{T}}) where {T<:Real}
-    m = [zeros(T, q1, q2) for q1 in nstates(f), q2 in nstates(f)]
+    m = OffsetArray([zeros(T, q1, q2) for q1 in nstates(f)[1:end-1], q2 in nstates(f)[2:end]], 0, +1) 
     accumulate_middle!(m, f)
 end
