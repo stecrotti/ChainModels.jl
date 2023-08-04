@@ -1,4 +1,4 @@
-qs = (4,3,1,2)
+qs = (3, 2, 4, 5, 8)
 f = [rand(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
 chain = ChainModel(f)
 L = length(chain)
@@ -33,4 +33,12 @@ end
     S = entropy(chain)
     S_exhaust = sum(-log(p)*p for (x,p) in pairs(P))
     @test S ≈ S_exhaust
+end
+
+@testset "Gradient of log-likelihood" begin
+    x = [rand(chain) for _ in 1:20]
+    ll(f) = loglikelihood(ChainModel(f), x)
+    df_true = grad(forward_fdm(4, 1), ll, f)[1]
+    df = loglikelihood_gradient(chain, x)
+    @test df ≈ df_true
 end

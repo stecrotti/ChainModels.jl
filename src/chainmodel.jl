@@ -23,10 +23,12 @@ function show(io::IO, chain::ChainModel{T}) where T
     println(io, "ChainModel{$T} with $L variables")
 end
 
+function evaluate_matrices(chain::ChainModel, x)
+    (chain.f[i][x[i],x[i+1]] for i in eachindex(chain.f))
+end
+
 function evaluate(chain::ChainModel, x)
-    L = length(chain)
-    length(x) == L || throw(ArgumentError("Length of `x` should match the number of variables. Got $(length(x)) and $L."))
-    prod(chain.f[i][x[i],x[i+1]] for i in eachindex(chain.f); init=1.0) 
+    prod(evaluate_matrices(chain, x); init=1.0) 
 end
 
 normalization(chain::ChainModel; l = accumulate_left(chain.f)) = sum(last(l))

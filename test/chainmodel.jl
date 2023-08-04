@@ -19,6 +19,7 @@ end
 @testset "Neighbor marginals" begin
     for i in 1:L-1
         @test Matrix(nmarg[i]) ≈ reshape(sum(P, dims=(1:L)[Not(i:i+1)]), qs[i], qs[i+1])
+        @test nmarg[i] ≈ pmarg[i,i+1]
     end
 end
 

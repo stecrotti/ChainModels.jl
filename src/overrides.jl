@@ -1,5 +1,29 @@
-function _logpdf(chain::ChainModel, x; l = accumulate_left(chain.f)) 
-    return log(evaluate(chain, x)) - log(normalization(chain; l))
+function _logpdf(chain::ChainModel, x; Z = normalization(chain)) 
+    return log(evaluate(chain, x)) - log(Z)
+end
+
+function loglikelihood(chain::ChainModel, x::AbstractArray{<:AbstractVector{<:Real}})
+    Z = normalization(chain)
+    return sum(_logpdf(chain, xᵃ; Z) for xᵃ in x)
+end 
+
+function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
+        x::Vector{Vector{U}}; neigmarg = neighbor_marginals(chain)) where {T,U<:Integer}
+    for dfᵢ in df
+        dfᵢ .= 0
+    end
+    for xᵃ in x
+        for i in eachindex(neigmarg)
+            for (yᵢ,yᵢ₊₁) in Iterators.product(axes(df[i])...)
+                df[i][yᵢ,yᵢ₊₁] += ( (yᵢ==xᵃ[i])*(yᵢ₊₁==xᵃ[i+1]) - neigmarg[i][yᵢ,yᵢ₊₁] ) / chain.f[i][yᵢ,yᵢ₊₁] 
+            end
+        end
+    end
+    df
+end
+function loglikelihood_gradient(chain::ChainModel{T}, x::Vector{Vector{U}};
+        neigmarg = neighbor_marginals(chain)) where {T,U<:Integer}
+    loglikelihood_gradient!(deepcopy(chain.f), chain, x; neigmarg)
 end
 
 # sample an index `i` of `w` with probability prop to `w[i]`
