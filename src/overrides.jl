@@ -1,7 +1,9 @@
 # sample an index `i` of `w` with probability prop to `w[i]`
 # copied from StatsBase but avoids creating a `Weight` object
 function sample_noalloc(rng::AbstractRNG, w) 
-    t = rand(rng) * sum(w)
+    z = sum(w)
+    isfinite(z) || throw(ArgumentError("Cannot sample: the set of weights has infinite sum"))
+    t = rand(rng) * z
     i = 0
     cw = 0.0
     for p in w
@@ -16,7 +18,9 @@ function _rand!(rng::AbstractRNG, chain::ChainModel{T}, x::AbstractVector{<:Inte
     r = accumulate_right(chain)
     x[begin] = sample_noalloc(rng, exp(rx) for rx in first(r))
     for i in Iterators.drop(eachindex(x), 1)
-        p = (exp(chain.f[i-1][x[i-1],xᵢ] + r[i+1][xᵢ] - r[i][x[i-1]]) for xᵢ in eachindex(r[i+1]))
+        logp = (chain.f[i-1][x[i-1],xᵢ] + r[i+1][xᵢ] - r[i][x[i-1]] for xᵢ in eachindex(r[i+1]))
+        logz = logsumexp(logp)
+        p = Iterators.map(x -> exp(x - logz), logp)
         x[i] = sample_noalloc(rng, p)
     end
     x
@@ -63,7 +67,7 @@ function cov(chain::ChainModel{T}; m = marginals(chain), p = pair_marginals(chai
 end
 
 function entropy(chain::ChainModel; nmarg = neighbor_marginals(chain))
-    logZ = log(normalization(chain)) 
+    logZ = lognormalization(chain)
     avg_logf = sum(expectation((xᵢ,xᵢ₊₁)->chain.f[i][xᵢ,xᵢ₊₁], nmarg[i]) for i in eachindex(nmarg))
     return logZ - avg_logf
 end

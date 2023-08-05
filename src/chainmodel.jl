@@ -49,18 +49,19 @@ normalize(chain::ChainModel; logZ = lognormalization(chain)) = normalize!(deepco
 function marginals(chain::ChainModel;
         l = accumulate_left(chain), r = accumulate_right(chain))
     return map(1:length(chain)) do i
-        pᵢ = [exp(l[i-1][xᵢ] + r[i+1][xᵢ]) for xᵢ in eachindex(l[i-1])]
-        # pᵢ = [exp(lᵢ₋₁ + rᵢ₊₁) for (lᵢ₋₁, rᵢ₊₁) in zip(axes(l[i-1],2), axes(r[i+1],1))]
-        pᵢ ./= sum(pᵢ)
+        pᵢ = [l[i-1][xᵢ] + r[i+1][xᵢ] for xᵢ in eachindex(l[i-1])]
+        pᵢ .-= logsumexp(pᵢ)
+        pᵢ .= exp.(pᵢ)
     end
 end 
 
 function neighbor_marginals(chain::ChainModel;
         l = accumulate_left(chain), r = accumulate_right(chain))
     return map(1:length(chain)-1) do i
-        pᵢ = [exp(l[i-1][xᵢ] + chain.f[i][xᵢ,xᵢ₊₁] + r[i+2][xᵢ₊₁]) 
+        pᵢ = [l[i-1][xᵢ] + chain.f[i][xᵢ,xᵢ₊₁] + r[i+2][xᵢ₊₁] 
             for xᵢ in eachindex(l[i-1]), xᵢ₊₁ in eachindex(r[i+2])]
-        pᵢ ./= sum(pᵢ)
+        pᵢ .-= logsumexp(pᵢ)
+        pᵢ .= exp.(pᵢ)
     end
 end
 
@@ -73,10 +74,11 @@ function pair_marginals(chain::ChainModel{T};
         for j in i+1:L
             for xᵢ in axes(p[i,j], 1)
                 for xⱼ in axes(p[i,j], 2)
-                    p[i,j][xᵢ,xⱼ] = exp(l[i-1][xᵢ] + m[i,j][xᵢ,xⱼ] + r[j+1][xⱼ])
+                    p[i,j][xᵢ,xⱼ] = l[i-1][xᵢ] + m[i,j][xᵢ,xⱼ] + r[j+1][xⱼ]
                 end
             end
-            p[i,j] ./= sum(p[i,j])
+            p[i,j] .-= logsumexp(p[i,j])
+            p[i,j] .= exp.(p[i,j])
             p[j,i] .= p[i,j]'
         end
     end
