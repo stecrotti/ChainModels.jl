@@ -1,5 +1,5 @@
 qs = (4,3,1,2)
-f = [rand(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
+f = [randn(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
 chain = ChainModel(f)
 L = length(chain)
 
