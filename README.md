@@ -15,7 +15,7 @@ p(x_1,\ldots,x_L) = \frac1Z\prod_{i=1}^{L-1} e^{f_i(x_i,x_{i+1})}
 with $Z = \sum\limits_{x_1,\ldots,x_L}\prod\limits_{i=1}^{L-1} e^{f_i(x_i,x_{i+1})}$ the normalization constant.
 
 ## Provided functionalities
-For a chain of length $L$ for which variables can take $q$ values, the following can be performed efficiently:
+For a chain of length $L$ with variables taking one of $q$ values, the following can be performed efficiently:
 
 | Operation | Cost          |
 | ------------- | ----------- |
