@@ -33,7 +33,7 @@ For a chain of length $L$ with variables taking one of $q$ values, the following
 - [One-dimensional Ising models](https://en.wikipedia.org/wiki/Ising_model#One_dimension)
 
 ## Efficient operations
-The efficiency of the operations mentioned above relies on some strategic pre-computations. For examples, partial normalizations from the left and from the right ($l$ and $r$, respectively)
+The efficiency of the operations mentioned above rely on some strategic pre-computations. For examples, partial normalizations from the left and from the right ($l$ and $r$, respectively)
 ```math
 \begin{eqnarray}
 l_{i}(x_{i+1}) =& \sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}\\
