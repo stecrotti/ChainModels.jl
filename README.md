@@ -25,6 +25,8 @@ For a chain of length $L$ for which variables can take $q$ values, the following
 | Compute pair marginals $p(x_i,x_j)$     |  $\mathcal O (L^2q^2)$ |
 | Draw a sample from $p$     |  $\mathcal O (Lq^2)$ |
 | Compute the entropy $S[p]=-\sum_xp(x)\log p(x) $     |  $\mathcal O (Lq^2)$ |
+| Compute the log-likelihood $L=\sum\limits_{\mu=1}^N\log p(x^{(\mu)})$ of $N$ samples     |  $\mathcal O (Lq^2 + NL)$ |
+| Compute the gradient of the log-likelihood $\frac{d L}{d f_i(x_i,x_{i+1})}$     |  $\mathcal O (Lq^2 + NLq^2)$ |
 
 ## Examples of chain models
 - [Markov Chains](https://en.wikipedia.org/wiki/Markov_chain)
