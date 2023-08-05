@@ -15,8 +15,8 @@ end
 function _rand!(rng::AbstractRNG, chain::ChainModel{T}, x::AbstractVector{<:Integer}) where {T<:Real}
     r = accumulate_right(chain)
     x[begin] = sample_noalloc(rng, exp(rx) for rx in first(r))
-    for (i,q) in zip(Iterators.drop(eachindex(x), 1), Iterators.drop(nstates(chain), 1))
-        p = (exp(chain.f[i-1][x[i-1],xᵢ] + r[i+1][xᵢ] - r[i][x[i-1]]) for xᵢ in 1:q)
+    for i in Iterators.drop(eachindex(x), 1)
+        p = (exp(chain.f[i-1][x[i-1],xᵢ] + r[i+1][xᵢ] - r[i][x[i-1]]) for xᵢ in eachindex(r[i+1]))
         x[i] = sample_noalloc(rng, p)
     end
     x
