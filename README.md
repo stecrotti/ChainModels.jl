@@ -25,8 +25,8 @@ For a chain of length $L$ with variables taking one of $q$ values, the following
 | Compute pair marginals $p(x_i,x_j)$     |  $\mathcal O (L^2q^2)$ |
 | Draw a sample from $p$     |  $\mathcal O (Lq^2)$ |
 | Compute the entropy $S[p]=-\sum_xp(x)\log p(x) $     |  $\mathcal O (Lq^2)$ |
-| Compute the log-likelihood $L=\sum\limits_{\mu=1}^N\log p(x^{(\mu)})$ of $N$ samples     |  $\mathcal O (Lq^2 + NL)$ |
-| Compute the gradient of the log-likelihood $\frac{d L}{d f_i(x_i,x_{i+1})}$     |  $\mathcal O (Lq^2 + NLq^2)$ |
+| Compute the log-likelihood $\log L=\sum\limits_{\mu=1}^N\log p(x^{(\mu)})$ of $N$ samples     |  $\mathcal O (Lq^2 + NL)$ |
+| Compute the gradient of the log-likelihood $\frac{d\log L}{d f_i(x_i,x_{i+1})}$     |  $\mathcal O (Lq^2 + NLq^2)$ |
 
 ## Examples of chain models
 - [Markov Chains](https://en.wikipedia.org/wiki/Markov_chain)
@@ -51,3 +51,21 @@ p(x_i,x_{i+1}) =& \frac1Z l_{i-1}(x_i) e^{f_i(x_i,x_{i+1})} r_{i+1}(x_i)\\
 
 ## Notes
 - The exponential parametrization is favorable because it puts no constraint on the values taken by the $f_i$'s, which can be positive or negative. One might as well parametrize directly as $f(x)=\prod\limits_{i=1}^{L-1} g_i(x_i,x_{i+1})$ with $g_i(x_i,x_{i+1})=e^{f_i(x_i,x_{i+1})}$, but must always ensure $g_i \ge 0$.
+
+## Example
+```julia
+using ChainModels
+
+L = 100
+q = fill(20, L)
+f = [randn(q[i], q[i+1]) for i in 1:L-1]
+p = ChainModel(f)
+
+Z = normalization(p)
+marg = marginals(p)
+neigmarg = neighbor_marginals(p)
+pairmarg = pair_marginals(p)
+S = entropy(p)
+x = [rand(p) for _ in 1:500]
+logL = loglikelihood(p, x)
+```
