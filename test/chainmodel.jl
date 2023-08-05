@@ -8,7 +8,14 @@ nmarg = neighbor_marginals(chain)
 pmarg = pair_marginals(chain)
 
 P = [evaluate(chain, x) for x in Iterators.product((1:q for q in qs)...)]
+@testset "normalization" begin
+    @test sum(P) ≈ normalization(chain)
+end
 P ./= sum(P)
+
+@testset "Normalization" begin
+    @test normalization(normalize(chain)) ≈ 1
+end
 
 @testset "Marginals" begin
     for i in 1:L

@@ -9,9 +9,6 @@ L = length(chain)
 end
 
 P = [evaluate(chain, x) for x in Iterators.product((1:q for q in qs)...)]
-@testset "normalization" begin
-    @test sum(P) ≈ normalization(chain)
-end
 P ./= sum(P)
 
 @testset "Sampling" begin

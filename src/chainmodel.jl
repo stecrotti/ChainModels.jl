@@ -39,7 +39,7 @@ normalization(chain::ChainModel; l = accumulate_left(chain.f)) = exp(lognormaliz
 
 function normalize!(chain::ChainModel; logZ = lognormalization(chain))
     for fᵢ in chain.f
-        fᵢ .-= logZ
+        fᵢ .-= logZ / length(chain.f)
     end
     chain
 end
