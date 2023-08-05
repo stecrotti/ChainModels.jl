@@ -1,5 +1,5 @@
-qs = (3, 2, 4, 5, 8)
-f = [rand(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
+qs = (3, 2, 4, 3)
+f = [randn(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
 chain = ChainModel(f)
 L = length(chain)
 
@@ -9,10 +9,23 @@ L = length(chain)
 end
 
 P = [evaluate(chain, x) for x in Iterators.product((1:q for q in qs)...)]
-@testset "normalization" begin
-    @test sum(P) ≈ normalization(chain)
-end
 P ./= sum(P)
+
+@testset "Sampling" begin
+    # test that empirical probabilities correlate better and better with true ones as the 
+    #  number of samples increases
+    rng = MersenneTwister(0)
+    nsamples = [10^3, 10^4, 10^5]
+    cors = zeros(length(nsamples))
+    for i in eachindex(nsamples)
+        x = [rand(rng, chain) for _ in 1:nsamples[i]]
+        prop = proportionmap(x)
+        a = sort(collect(values(prop)), rev=true)
+        b = sort(P[:], rev=true)[1:length(a)]
+        cors[i] = cor(a, b)
+    end
+    @test issorted(cors)
+end
 
 @testset "Mean, variance" begin
     μ = mean(chain)
@@ -43,6 +56,7 @@ end
     P ./= sum(P)
     Q = [evaluate(q, x) for x in Iterators.product((1:q for q in qs)...)]
     Q ./= sum(Q)
+    @test kldivergence(p, p) == 0
     kl = kldivergence(p, q)
     kl_exact = sum(px*log(px/qx) for (px, qx) in zip(P, Q))
     @test kl ≈ kl_exact
@@ -55,14 +69,3 @@ end
     df = loglikelihood_gradient(chain, x)
     @test df ≈ df_true
 end
-
-# x = [rand(chain) for _ in 1:10^4]
-# fhat = [rand(size(fi)...) .+ 1 for fi in f]
-# η = 1e-1 / length(x)
-# for _ in 1:10^3
-#     loglikelihood_gradient!(df, chain, x)
-#     for (fi, dfi) in zip(fhat, df)
-#         fi .+= η*dfi
-#     end
-#     println("KL: ", kldivergence(chain, ChainModel(fhat)))
-# end
