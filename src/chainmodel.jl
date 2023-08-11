@@ -1,11 +1,12 @@
-abstract type AbstractChainModel{T<:Real} <: DiscreteMultivariateDistribution; end
+abstract type AbstractChainModel{T<:Real,L} <: DiscreteMultivariateDistribution; end
 
-struct ChainModel{T} <: AbstractChainModel{T}
+struct ChainModel{T,L} <: AbstractChainModel{T,L}
     f :: Vector{Matrix{T}}
 
     function ChainModel(f::Vector{Matrix{T}}) where {T<:Real}
-        all( size(f[i],2) == size(f[i+1],1) for i in 1:length(f)-1 ) || throw(ArgumentError("Matrix sizes must be consistent"))
-        return new{T}(f)
+        L = length(f) + 1
+        all( size(f[i],2) == size(f[i+1],1) for i in 1:L-2 ) || throw(ArgumentError("Matrix sizes must be consistent"))
+        return new{T,L}(f)
     end
 end
 
@@ -13,12 +14,11 @@ accumulate_left(chain::ChainModel) = accumulate_left(chain.f)
 accumulate_right(chain::ChainModel) = accumulate_right(chain.f)
 accumulate_middle(chain::ChainModel) = accumulate_middle(chain.f)
 
-length(chain::ChainModel) = length(chain.f) + 1
+length(::ChainModel{T,L}) where {T,L} = L
 
-nstates(chain::ChainModel) = nstates(chain.f)
+nstates(chain::ChainModel{T,L}) where {T,L} = NTuple{L,Int}(nstates(chain.f))
 
-function show(io::IO, chain::ChainModel{T}) where T
-    L = length(chain)
+function show(io::IO, ::ChainModel{T,L}) where {T,L}
     println(io, "ChainModel{$T} with $L variables")
 end
 

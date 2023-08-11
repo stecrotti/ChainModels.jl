@@ -20,8 +20,7 @@ function _rand!(rng::AbstractRNG, chain::ChainModel{T}, x::AbstractVector{<:Inte
     for i in Iterators.drop(eachindex(x), 1)
         logp = (chain.f[i-1][x[i-1],xᵢ] + r[i+1][xᵢ] - r[i][x[i-1]] for xᵢ in eachindex(r[i+1]))
         logz = logsumexp(logp)
-        p = Iterators.map(x -> exp(x - logz), logp)
-        x[i] = sample_noalloc(rng, p)
+        x[i] = sample_noalloc(rng, exp(logpx - logz) for logpx in logp)
     end
     x
 end
@@ -30,15 +29,27 @@ function _logpdf(chain::ChainModel, x; logZ = lognormalization(chain))
     return logevaluate(chain, x) - logZ
 end
 
-function loglikelihood(chain::ChainModel, x::AbstractArray{<:AbstractVector{<:Real}})
-    logZ = lognormalization(chain)
+function loglikelihood(chain::ChainModel, A::AbstractMatrix{<:Integer}; logZ = lognormalization(chain))
+    size(A, 1) == length(chain) || throw(DimensionMismatch("number of rows of `A` must match size of variable, got $(size(A, 1)) and $(length(chain))."))
+    # return sum(_logpdf(chain, xᵃ; logZ) for xᵃ in eachcol(A); init=0.0)
+    ll = 0.0
+    for xᵃ in eachcol(A)
+        ll += _logpdf(chain, xᵃ; logZ)
+    end
+    return ll
+end
+
+function loglikelihood(chain::ChainModel, x::AbstractVector{<:AbstractVector{<:Integer}}; logZ = lognormalization(chain))
+    L = length(chain)
+    all(length(xi) == L for xi in x) || throw(DimensionMismatch("inconsistent array dimensions"))
     return sum(_logpdf(chain, xᵃ; logZ) for xᵃ in x)
-end 
+end
 
 # function expectation(f, p::Array{<:Real, N}) where N
 #     sum(f(x...) * p[x...] for x in Iterators.product(axes(p)...))
 # end
 # expectation(p) = expectation(identity, p)
+
 
 expectation(f, p::Matrix{<:Real}) = sum(f(xi,xj) * p[xi, xj] for xi in axes(p,1), xj in axes(p,2))
 expectation(f, p::Vector{<:Real}) = sum(f(xi) * p[xi] for xi in eachindex(p))
@@ -59,7 +70,7 @@ function cov(chain::ChainModel{T}; m = marginals(chain), p = pair_marginals(chai
         pᵢ = m[i]
         c[i,i] = expectation(abs2, pᵢ) - expectation(pᵢ)^2
         for j in i+1:L
-            c[i,j] = expectation(*, p[i,j]) - expectation(m[i])*expectation(m[j])
+            c[i,j] = expectation(*, p[i,j]) - expectation(m[i]) * expectation(m[j])
             c[j,i] = c[i,j]
         end
     end
@@ -68,20 +79,29 @@ end
 
 function entropy(chain::ChainModel; nmarg = neighbor_marginals(chain))
     logZ = lognormalization(chain)
-    avg_logf = sum(expectation((xᵢ,xᵢ₊₁)->chain.f[i][xᵢ,xᵢ₊₁], nmarg[i]) for i in eachindex(nmarg))
+    avg_logf = 0.0
+    for (fᵢ,pᵢ) in zip(chain.f, nmarg)
+        avg_logf += expectation((xᵢ,xᵢ₊₁)->fᵢ[xᵢ,xᵢ₊₁], pᵢ)
+    end
+    # avg_logf = sum(expectation((xᵢ,xᵢ₊₁)->fᵢ[xᵢ,xᵢ₊₁], pᵢ) for (fᵢ,pᵢ) in zip(chain.f, nmarg))
     return logZ - avg_logf
 end
 
 function kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_marginals(p))
     plogp = - entropy(p; nmarg)
-    plogq = - lognormalization(q) + 
-        sum(expectation((xᵢ,xᵢ₊₁)->q.f[i][xᵢ,xᵢ₊₁], nmarg[i]) for i in eachindex(nmarg))
+    plogq = 0.0
+    for i in eachindex(nmarg) 
+        plogq += expectation((xᵢ,xᵢ₊₁)->q.f[i][xᵢ,xᵢ₊₁], nmarg[i])
+    end
+    plogq -= lognormalization(q)
+    # plogq = - lognormalization(q) + 
+    #   sum(expectation((xᵢ,xᵢ₊₁)->q.f[i][xᵢ,xᵢ₊₁], nmarg[i]) for i in eachindex(nmarg))
     return plogp - plogq
 end
 
 
 function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
-        x::Vector{Vector{U}}; neigmarg = neighbor_marginals(chain)) where {T,U<:Integer}
+        x::AbstractVector{<:AbstractVector{<:Integer}}; neigmarg = neighbor_marginals(chain)) where {T}
     for dfᵢ in df
         dfᵢ .= 0
     end
@@ -94,7 +114,11 @@ function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
     end
     df
 end
-function loglikelihood_gradient(chain::ChainModel{T}, x::Vector{Vector{U}};
-        neigmarg = neighbor_marginals(chain)) where {T,U<:Integer}
+function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
+        x::AbstractMatrix{<:Integer}; kw...) where {T}
+    return loglikelihood_gradient!(df, chain, eachcol(x); kw...)
+end
+function loglikelihood_gradient(chain::ChainModel{T}, x;
+        neigmarg = neighbor_marginals(chain)) where {T}
     loglikelihood_gradient!(deepcopy(chain.f), chain, x; neigmarg)
 end

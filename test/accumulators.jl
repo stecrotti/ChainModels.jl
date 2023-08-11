@@ -1,11 +1,6 @@
-qs = (3, 2, 4)
-f = [randn(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
-chain = ChainModel(f)
-L = length(chain)
-
-l = accumulate_left(f)
-r = accumulate_right(f)
-m = accumulate_middle(f)
+l = @inferred accumulate_left(f)
+r = @inferred accumulate_right(f)
+m = @inferred accumulate_middle(f)
 
 function evaluate_partial(chain::ChainModel{T}, x, i, j) where T
     if i > j
@@ -40,7 +35,7 @@ end
 end
 
 @testset "Accumulate middle" begin
-    m_exhaust = OffsetArray([zeros(q1, q2) for q1 in nstates(f)[1:end-1], q2 in nstates(f)[2:end]], 0, +1) 
+    m_exhaust = OffsetArray([zeros(q1, q2) for q1 in collect(nstates(f))[1:end-1], q2 in collect(nstates(f))[2:end]], 0, +1) 
     for i in axes(m_exhaust, 1)
         for j in i+1:L
             X = Iterators.product((1:q for q in nstates(chain)[i:j])...)

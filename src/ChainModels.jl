@@ -11,8 +11,8 @@ import StatsBase: kldivergence
 
 export AbstractChainModel, ChainModel, nstates,
         accumulate_left!, accumulate_right!, accumulate_left,
-        accumulate_right, accumulate_middle, evaluate, lognormalization, normalization,
-        normalize!, normalize,
+        accumulate_right, accumulate_middle, logevaluate, evaluate, lognormalization,
+        normalization, normalize!, normalize,
         marginals, neighbor_marginals, pair_marginals,
         loglikelihood_gradient, loglikelihood_gradient!,
         # overrides from Distributions, StatsBase

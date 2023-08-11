@@ -1,19 +1,11 @@
-qs = (4,3,1,2)
-f = [randn(qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
-chain = ChainModel(f)
-L = length(chain)
-
-marg = marginals(chain)
-nmarg = neighbor_marginals(chain)
-pmarg = pair_marginals(chain)
+marg = @inferred marginals(chain)
+nmarg = @inferred neighbor_marginals(chain)
+pmarg = @inferred pair_marginals(chain)
 
 P = [evaluate(chain, x) for x in Iterators.product((1:q for q in qs)...)]
 @testset "normalization" begin
-    @test sum(P) ≈ normalization(chain)
-end
-P ./= sum(P)
-
-@testset "Normalization" begin
+    @test sum(P) ≈ (@inferred normalization(chain))
+    P ./= sum(P)
     @test normalization(normalize(chain)) ≈ 1
 end
 

@@ -1,7 +1,7 @@
 # number of values each variable in the chain can take
 function nstates(f::Vector{Matrix{T}}) where {T<:Real}
     N = length(f)
-    Tuple(i == N + 1 ? size(f[end],2) : size(f[i],1) for i in 1:N+1)
+    (i == length(f) + 1 ? size(f[end],2) : size(f[i],1) for i in 1:N+1)
 end
 
 function accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
@@ -52,6 +52,6 @@ function accumulate_middle!(m, f::Vector{Matrix{T}}) where {T<:Real}
 end
 
 function accumulate_middle(f::Vector{Matrix{T}}) where {T<:Real}
-    m = OffsetArray([zeros(T, q1, q2) for q1 in nstates(f)[1:end-1], q2 in nstates(f)[2:end]], 0, +1) 
+    m = OffsetArray([zeros(T, q1, q2) for q1 in collect(nstates(f))[1:end-1], q2 in collect(nstates(f))[2:end]], 0, +1) 
     accumulate_middle!(m, f)
 end
