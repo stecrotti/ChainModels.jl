@@ -99,7 +99,6 @@ function kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_marginals(p
     return plogp - plogq
 end
 
-
 function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
         x::AbstractVector{<:AbstractVector{<:Integer}}; neigmarg = neighbor_marginals(chain)) where {T}
     for dfᵢ in df
@@ -115,8 +114,8 @@ function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
     df
 end
 function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
-        x::AbstractMatrix{<:Integer}; kw...) where {T}
-    return loglikelihood_gradient!(df, chain, eachcol(x); kw...)
+        A::AbstractMatrix{<:Integer}; kw...) where {T}
+    return loglikelihood_gradient!(df, chain, eachcol(A); kw...)
 end
 function loglikelihood_gradient(chain::ChainModel{T}, x;
         neigmarg = neighbor_marginals(chain)) where {T}
