@@ -1,6 +1,7 @@
 # number of values each variable in the chain can take
-function nstates(f::Vector{Matrix{T}}) where {T<:Real}
+function nstates(f::Vector{Matrix{T}}, bc::BoundaryConditions) where {T<:Real}
     N = length(f)
+    (bc isa Periodic) && (N += 1)
     (i == length(f) + 1 ? size(f[end],2) : size(f[i],1) for i in 1:N+1)
 end
 

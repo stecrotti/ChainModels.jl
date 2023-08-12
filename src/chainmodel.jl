@@ -1,20 +1,35 @@
-abstract type AbstractChainModel{T<:Real,L} <: DiscreteMultivariateDistribution; end
-
-struct ChainModel{T,L} <: AbstractChainModel{T,L}
+struct ChainModel{T,L,BC<:BoundaryConditions} <: DiscreteMultivariateDistribution
     f :: Vector{Matrix{T}}
 
-    function ChainModel(f::Vector{Matrix{T}}) where {T<:Real}
-        L = length(f) + 1
-        all( size(f[i],2) == size(f[i+1],1) for i in 1:L-2 ) || throw(ArgumentError("Matrix sizes must be consistent"))
-        return new{T,L}(f)
+    function ChainModel(f::Vector{Matrix{T}}, bc::BC) where {T<:Real,BC<:BoundaryConditions}
+        _checksizes(f)
+        L = (bc isa Open) ? length(f) + 1 : length(f)
+        return new{T,L,BC}(f)
     end
+end
+
+function _checksizes(f::Vector{Matrix{T}}) where {T<:Real}
+    all( size(f[i],2) == size(f[i+1],1) for i in 1:length(f) - 1 ) || throw(ArgumentError("Matrix sizes must be consistent"))   
+    return nothing
+end
+
+function ChainModel(f::Vector{Matrix{T}}, bc::Open) where {T<:Real}
+    L = length(f) + 1
+    return ChainModel(f, bc)
+end
+ChainModel(f::Vector{Matrix{T}}) where {T<:Real} = ChainModel(f, Open()) 
+
+function ChainModel(f::Vector{Matrix{T}}, ::Periodic) where {T<:Real}
+    L = length(f)
+    all( size(f[mod1(i,L)],2) == size(f[mod1(i+1,L)],1) for i in 1:L ) || throw(ArgumentError("Matrix sizes must be consistent"))
+    return ChainModel{T,L,Periodic}(f)
 end
 
 accumulate_left(chain::ChainModel) = accumulate_left(chain.f)
 accumulate_right(chain::ChainModel) = accumulate_right(chain.f)
 accumulate_middle(chain::ChainModel) = accumulate_middle(chain.f)
 
-length(::ChainModel{T,L}) where {T,L} = L
+length(::AbstractChainModel{T,L}) where {T,L} = L
 
 nstates(chain::ChainModel{T,L}) where {T,L} = NTuple{L,Int}(nstates(chain.f))
 

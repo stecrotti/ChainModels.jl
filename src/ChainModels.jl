@@ -19,6 +19,10 @@ export AbstractChainModel, ChainModel, nstates,
         rand, rand!, logpdf, loglikelihood, pdf, mean, var, cov, entropy,
         kldivergence
         
+        
+abstract type BoundaryConditions; end
+struct Open <: BoundaryConditions; end
+struct Periodic <: BoundaryConditions; end
 
 include("accumulators.jl")
 include("chainmodel.jl")
