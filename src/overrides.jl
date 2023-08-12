@@ -14,15 +14,37 @@ function sample_noalloc(rng::AbstractRNG, w)
     @assert false
 end
 
-function _rand!(rng::AbstractRNG, chain::ChainModel{T}, x::AbstractVector{<:Integer}) where {T<:Real}
-    r = accumulate_right(chain)
+struct ChainSampler{T,L,U} <: Sampleable{Multivariate,Discrete} where {T<:Real,L,U<:AbstractChainModel{T,L}}
+    chain :: U
+    r     :: OffsetVector{Matrix{T}, Vector{Matrix{T}}}
+
+    function ChainSampler(chain::AbstractChainModel{T,L}) where {T,L}
+        U = typeof(chain)
+        new{T,L,U}(chain, accumulate_right(chain))
+    end
+end
+
+length(s::ChainSampler) = length(s.chain)
+
+sampler(chain::ChainModel) = ChainSampler(chain)
+
+function _onesample!(rng::AbstractRNG, s::ChainSampler, x::AbstractVector{<:Integer})
+    (; chain, r) = s
     x[begin] = sample_noalloc(rng, exp(rx) for rx in first(r))
     for i in Iterators.drop(eachindex(x), 1)
         logp = (chain.f[i-1][x[i-1],xᵢ] + r[i+1][xᵢ] - r[i][x[i-1]] for xᵢ in eachindex(r[i+1]))
         logz = logsumexp(logp)
         x[i] = sample_noalloc(rng, exp(logpx - logz) for logpx in logp)
     end
-    x
+    return x
+end
+
+function _rand!(rng::AbstractRNG, chain::ChainModel, x::AbstractVector{<:Integer})
+    return _onesample!(rng, ChainSampler(chain), x)
+end
+
+function _rand!(rng::AbstractRNG, s::ChainSampler, A::DenseMatrix{<:Integer})
+    return stack(_onesample!(rng, s, x) for x in eachcol(A))
 end
 
 function _logpdf(chain::ChainModel, x; logZ = lognormalization(chain)) 

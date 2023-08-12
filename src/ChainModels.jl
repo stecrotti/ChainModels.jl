@@ -5,7 +5,7 @@ import LogExpFunctions: logsumexp
 import OffsetArrays: OffsetArray, OffsetVector
 import LinearAlgebra: normalize!,  normalize
 import Random: AbstractRNG
-import Distributions: DiscreteMultivariateDistribution, Sampleable, Multivariate, Discrete, 
+import Distributions: DiscreteMultivariateDistribution, Sampleable, Multivariate, Discrete,
     logpdf, pdf, _rand!, eltype, sampler, _logpdf, loglikelihood, mean, var, cov, entropy
 import StatsBase: kldivergence
 
@@ -16,10 +16,9 @@ export AbstractChainModel, ChainModel, nstates,
         marginals, neighbor_marginals, pair_marginals,
         loglikelihood_gradient, loglikelihood_gradient!,
         # overrides from Distributions, StatsBase
-        logpdf, loglikelihood, pdf, mean, var, cov, entropy,
+        rand, rand!, logpdf, loglikelihood, pdf, mean, var, cov, entropy,
         kldivergence
         
-
 
 include("accumulators.jl")
 include("chainmodel.jl")
