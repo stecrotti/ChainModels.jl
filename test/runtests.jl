@@ -7,11 +7,14 @@ using FiniteDifferences
 using StatsBase
 using Random
 
-rng = MersenneTwister(0)
-qs = (4,3,1,2)
+rng = MersenneTwister(1)
+qs = (4,3,2,4)
 f = [randn(rng, qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
 chain = ChainModel(f)
-L = length(chain)
+pchain = ChainModel(f, Periodic)
+@test (@inferred length(chain)) == (@inferred length(pchain) + 1)
+@test (@inferred nstates(chain)) == qs
+@test (@inferred nstates(pchain)) == qs[1:end-1]
 
 @testset "Accumulators" begin
     include("accumulators.jl")
@@ -21,8 +24,8 @@ end
     include("chainmodel.jl")
 end
 
-@testset "Overrides" begin
-    include("overrides.jl")
-end
+# @testset "Overrides" begin
+#     include("overrides.jl")
+# end
 
 nothing

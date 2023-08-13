@@ -14,11 +14,11 @@ function sample_noalloc(rng::AbstractRNG, w)
     @assert false
 end
 
-struct ChainSampler{T,L,U} <: Sampleable{Multivariate,Discrete} where {T<:Real,L,U<:AbstractChainModel{T,L}}
+struct ChainSampler{T,L,U} <: Sampleable{Multivariate,Discrete} where {T<:Real,L,U<:ChainModel{T,L}}
     chain :: U
     r     :: OffsetVector{Matrix{T}, Vector{Matrix{T}}}
 
-    function ChainSampler(chain::AbstractChainModel{T,L}) where {T,L}
+    function ChainSampler(chain::ChainModel{T,L}) where {T,L}
         U = typeof(chain)
         new{T,L,U}(chain, accumulate_right(chain))
     end
