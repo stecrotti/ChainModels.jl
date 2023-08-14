@@ -8,7 +8,7 @@ using StatsBase
 using Random
 
 rng = MersenneTwister(1)
-qs = (4,3,2,4)
+qs = (4,2,3,4,5,4)
 f = [randn(rng, qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
 chain = ChainModel(f)
 pchain = ChainModel(f, Periodic)

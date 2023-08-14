@@ -63,41 +63,80 @@ end
 findcenter(f::Vector{Matrix{T}}) where T = findmin(nstates(f, Periodic)) 
 
 function accumulate_left!(l, f::Vector{Matrix{T}}, ::Type{Periodic}) where {T<:Real}
-    L = length(f)
-    qc, c = findcenter(f)
-    copyto!(l[mod1(c-1,L)], I); l[mod1(c-1,L)] .= log.(l[mod1(c-1,L)])
-    for j in eachindex(f)
-        i = mod1(j + c - 1, L)
-        for xᵢ₊₁ in axes(l[i], 2), xc in axes(l[i], 1)
-            l[i][xc,xᵢ₊₁] = logsumexp(l[mod1(i-1, L)][xc,xᵢ] + f[i][xᵢ,xᵢ₊₁] for xᵢ in axes(f[i], 1))
+    # L = length(f)
+    # qc, c = findcenter(f)
+    # copyto!(l[mod1(c-1,L)], I); l[mod1(c-1,L)] .= log.(l[mod1(c-1,L)])
+    # for j in Iterators.take(eachindex(f), L - 1)
+    #     i = mod1(j + c - 1, L)
+    #     for xᵢ₊₁ in axes(l[i], 2), xc in axes(l[i], 1)
+    #         l[i][xc,xᵢ₊₁] = logsumexp(l[mod1(i-1, L)][xc,xᵢ] + f[i][xᵢ,xᵢ₊₁] for xᵢ in axes(f[i], 1))
+    #     end
+    # end
+    copyto!(l[0], I); l[0] .= log.(l[0]) 
+    for i in Iterators.drop(eachindex(l), 1)
+        for xᵢ₊₁ in axes(l[i], 2), x1 in axes(l[i], 1)
+            l[i][x1,xᵢ₊₁] = logsumexp(l[i-1][x1,xᵢ] + f[i][xᵢ,xᵢ₊₁] for xᵢ in axes(f[i], 1))
         end
     end
     return l
 end
 
 function accumulate_left(f::Vector{Matrix{T}}, BC::Type{Periodic}) where {T<:Real}
-    qc, c = findcenter(f)
-    l = circshift!([zeros(T, qc, q) for q in nstates(f, BC)], -1)
+    # qc, c = findcenter(f)
+    # l = circshift!([zeros(T, qc, q) for q in nstates(f, BC)], -1)
+    q1 = first(nstates(f, Periodic))
+    l = OffsetVector(push!([zeros(T, q1, q) for q in nstates(f, BC)], zeros(T, q1, q1)), -1)
     accumulate_left!(l, f, BC)
 end
 
 function accumulate_right!(r, f::Vector{Matrix{T}}, ::Type{Periodic}) where {T<:Real}
-    L = length(f)
-    qc, c = findcenter(f)
-    copyto!(r[mod1(c+1,L)], I); r[mod1(c+1,L)] .= log.(r[mod1(c+1,L)]) 
-    for j in Iterators.take(reverse(eachindex(f)), L-1)
-        i = mod1(j + c - 1, L)
-        ip1 = mod1(i + 1, L)
-        ip2 = mod1(i + 2, L)
-        for xc in axes(r[ip1], 2), xᵢ in axes(r[ip1], 1)
-            r[ip1][xᵢ,xc] = logsumexp(f[i][xᵢ,xᵢ₊₁] + r[ip2][xᵢ₊₁,xc] for xᵢ₊₁ in axes(f[i], 2))
+    # L = length(f)
+    # qc, c = findcenter(f)
+    # copyto!(r[mod1(c+1,L)], I); r[mod1(c+1,L)] .= log.(r[mod1(c+1,L)]) 
+    # for j in Iterators.take(reverse(eachindex(f)), L - 1)
+    #     i = mod1(j + c - 1, L)
+    #     ip1 = mod1(i + 1, L)
+    #     ip2 = mod1(i + 2, L)
+    #     for xc in axes(r[ip1], 2), xᵢ in axes(r[ip1], 1)
+    #         r[ip1][xᵢ,xc] = logsumexp(f[i][xᵢ,xᵢ₊₁] + r[ip2][xᵢ₊₁,xc] for xᵢ₊₁ in axes(f[i], 2))
+    #     end
+    # end
+    copyto!(r[end], I); r[end] .= log.(r[end]) 
+    for i in Iterators.drop(Iterators.reverse(eachindex(r)), 1)
+        for x1 in axes(r[i], 2), xᵢ₋₁ in axes(r[i], 1)
+            r[i][xᵢ₋₁,x1] = logsumexp(f[i-1][xᵢ₋₁,xᵢ] + r[i+1][xᵢ,x1] for xᵢ in axes(f[i-1], 2))
         end
     end
     return r
 end
 
 function accumulate_right(f::Vector{Matrix{T}}, BC::Type{Periodic}) where {T<:Real}
-    qc, c = findcenter(f)
-    r = circshift!([zeros(T, q, qc) for q in nstates(f, BC)], +1)
+    # qc, c = findcenter(f)
+    # r = circshift!([zeros(T, q, qc) for q in nstates(f, BC)], +1)
+    q1 = first(nstates(f, Periodic))
+    r = OffsetVector(push!([zeros(T, q, q1) for q in nstates(f, BC)], zeros(T, q1, q1)), +1)
     accumulate_right!(r, f, BC)
+end
+
+function accumulate_middle!(m, f::Vector{Matrix{T}}, BC::Type{Periodic}) where {T<:Real}
+    for i in eachindex(f)
+        m[i,i+1] .= f[i]
+    end
+    for j in Iterators.drop(axes(m,2), 1)
+        for i in reverse(1:j-2)
+            for xᵢ in axes(m[i,j], 1)
+                for xⱼ in axes(m[i,j], 2)
+                    m[i, j][xᵢ,xⱼ] = logsumexp(f[i][xᵢ,xᵢ₊₁] + m[i+1,j][xᵢ₊₁,xⱼ] 
+                                                        for xᵢ₊₁ in axes(m[i+1,j], 1))
+                end
+            end
+        end
+    end
+    m
+end
+
+function accumulate_middle(f::Vector{Matrix{T}}, BC::Type{Periodic}) where {T<:Real}
+    m = OffsetArray([zeros(T, q1, q2) 
+        for q1 in collect(nstates(f, BC))[1:end-1], q2 in collect(nstates(f, BC))[2:end]], 0, +1) 
+    accumulate_middle!(m, f, BC)
 end

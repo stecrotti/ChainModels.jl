@@ -33,8 +33,6 @@
     end
 end
 
-
-
 @testset "Periodic BC" begin
     L = length(pchain)
     P = [evaluate(pchain, x) for x in Iterators.product((1:q for q in nstates(pchain))...)]
@@ -47,12 +45,12 @@ end
         r = accumulate_right(pchain)
         qc, c = ChainModels.findcenter(pchain.f)
         for i in (1:L)
-            @test Z ≈ sum(exp, l[mod1(i-1,L)] .+ r[mod1(i+1,L)]') 
+            @test Z ≈ sum(exp, l[i-1] .+ r[i+1]') 
         end
     end
     
     marg = @inferred marginals(pchain)
-    # nmarg = @inferred neighbor_marginals(pchain)
+    nmarg = @inferred neighbor_marginals(pchain)
     # pmarg = @inferred pair_marginals(pchain)
 
     @testset "Marginals" begin
@@ -61,7 +59,13 @@ end
         end
     end
     
-
+    @testset "Neighbor marginals" begin
+        for i in 1:L-1
+            @test nmarg[i] ≈ reshape(sum(P, dims=(1:L)[Not(i,i+1)]), qs[i], qs[i+1])
+            # @test nmarg[i] ≈ pmarg[i,i+1]
+        end
+        @test nmarg[end]'[:] ≈ sum(P, dims=(1:L)[Not(L,1)])[:]
+    end
     
     
 end

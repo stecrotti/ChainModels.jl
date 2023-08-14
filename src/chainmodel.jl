@@ -56,13 +56,14 @@ function evaluate(chain::ChainModel, x)
     exp(logevaluate(chain, x)) 
 end
 
-lognormalization(chain::OpenChainModel; l = accumulate_left(chain)) = logsumexp(last(l))
-normalization(chain::ChainModel; l = accumulate_left(chain)) = exp(lognormalization(chain; l))
+lognormalization(chain::OpenChainModel; r = accumulate_right(chain)) = logsumexp(first(r))
+normalization(chain::ChainModel; r = accumulate_right(chain)) = exp(lognormalization(chain; r))
 
-function lognormalization(chain::PeriodicChainModel; l = accumulate_left(chain))
-    qc, c = findcenter(chain.f)
-    lc1 = l[mod1(c-1, length(chain))]
-    return logsumexp(lc1[x] for x in diagind(lc1))
+function lognormalization(chain::PeriodicChainModel; r = accumulate_right(chain))
+    # qc, c = findcenter(chain.f)
+    # rc1 = r[mod1(c+1, length(chain))]
+    # return logsumexp(rc1[x] for x in diagind(rc1))
+    return logsumexp(r[begin][x] for x in diagind(r[begin]))
 end
 
 function normalize!(chain::ChainModel; logZ = lognormalization(chain))
@@ -86,8 +87,8 @@ function marginals(chain::PeriodicChainModel;
         l = accumulate_left(chain), r = accumulate_right(chain))
     L = length(chain)
     return map(1:length(chain)) do i
-        pᵢ = [ logsumexp(l[mod1(i-1,L)][xc,xᵢ] + r[mod1(i+1,L)][xᵢ,xc] 
-            for xc in axes(l[mod1(i-1,L)], 1)) for xᵢ in axes(l[mod1(i-1,L)], 2) ]
+        pᵢ = [ logsumexp(l[i-1][x1,xᵢ] + r[i+1][xᵢ,x1] 
+            for x1 in axes(l[mod1(i-1,L)], 1)) for xᵢ in axes(l[mod1(i-1,L)], 2) ]
         pᵢ .-= logsumexp(pᵢ)
         pᵢ .= exp.(pᵢ)
     end
@@ -98,6 +99,17 @@ function neighbor_marginals(chain::OpenChainModel;
     return map(1:length(chain)-1) do i
         pᵢ = [l[i-1][xᵢ] + chain.f[i][xᵢ,xᵢ₊₁] + r[i+2][xᵢ₊₁] 
             for xᵢ in eachindex(l[i-1]), xᵢ₊₁ in eachindex(r[i+2])]
+        pᵢ .-= logsumexp(pᵢ)
+        pᵢ .= exp.(pᵢ)
+    end
+end
+function neighbor_marginals(chain::PeriodicChainModel;
+        l = accumulate_left(chain), r = accumulate_right(chain))
+    L = length(chain)
+    return map(1:length(chain)) do i
+        pᵢ = [ logsumexp( l[i-1][xc,xᵢ] + r[i+2][xᵢ₊₁,xc]
+                for xc in axes(l[i-1], 1) ) + chain.f[i][xᵢ,xᵢ₊₁]
+                for xᵢ in axes(l[i-1], 2), xᵢ₊₁ in axes(r[i+2], 1) ]
         pᵢ .-= logsumexp(pᵢ)
         pᵢ .= exp.(pᵢ)
     end
@@ -122,3 +134,22 @@ function pair_marginals(chain::OpenChainModel{T};
     end
     p
 end
+# function pair_marginals(chain::PeriodicChainModel{T};
+#         l = accumulate_left(chain), r = accumulate_right(chain), 
+#         m = accumulate_middle(chain)) where T
+#     L = length(chain)
+#     p = [zeros(T, q1, q2) for q1 in nstates(chain), q2 in nstates(chain)]
+#     for i in 1:L-1
+#         for j in i+1:L
+#             for xᵢ in axes(p[i,j], 1)
+#                 for xⱼ in axes(p[i,j], 2)
+#                     p[i,j][xᵢ,xⱼ] = l[i-1][xᵢ] + m[i,j][xᵢ,xⱼ] + r[j+1][xⱼ]
+#                 end
+#             end
+#             p[i,j] .-= logsumexp(p[i,j])
+#             p[i,j] .= exp.(p[i,j])
+#             p[j,i] .= p[i,j]'
+#         end
+#     end
+#     p
+# end
