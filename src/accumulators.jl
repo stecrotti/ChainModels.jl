@@ -1,9 +1,19 @@
-# number of values each variable in the chain can take
+"""
+    nstates(f::Vector{Matrix{T}}) where {T<:Real}
+
+Returns an iterator with the number of values each variable can take.
+"""
 function nstates(f::Vector{Matrix{T}}) where {T<:Real}
     N = length(f)
     (i == length(f) + 1 ? size(f[end],2) : size(f[i],1) for i in 1:N+1)
 end
 
+
+"""
+    accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
+
+In-place version of [`accumulate_left`](@ref)
+"""
 function accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
     l[0] .= 0
     for i in eachindex(f)
@@ -14,11 +24,24 @@ function accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
     l
 end
 
+@doc raw"""
+    accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
+
+Compute the left partial normalization for the matrices in `f`
+```math
+l_{i}(x_{i+1}) = \sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}
+```
+"""
 function accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
     l = OffsetArray([zeros(T, 1, q) for q in nstates(f)], -1)
     accumulate_left!(l, f)
 end
 
+"""
+    accumulate_right!(l, f::Vector{Matrix{T}}) where {T<:Real}
+
+In-place version of [`accumulate_right`](@ref)
+"""
 function accumulate_right!(r, f::Vector{Matrix{T}}) where {T<:Real}
     r[end] .= 0
     for i in reverse(eachindex(f))
@@ -29,11 +52,24 @@ function accumulate_right!(r, f::Vector{Matrix{T}}) where {T<:Real}
     r
 end
 
+@doc raw"""
+    accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
+
+Compute the right partial normalization for the matrices in `f`
+```math
+r_{i}(x_{i-1}) = \sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
+```
+"""
 function accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
     r = OffsetArray([zeros(T, q, 1) for q in nstates(f)], +1)
     accumulate_right!(r, f)
 end
 
+"""
+    accumulate_middle!(l, f::Vector{Matrix{T}}) where {T<:Real}
+
+In-place version of [`accumulate_middle`](@ref)
+"""
 function accumulate_middle!(m, f::Vector{Matrix{T}}) where {T<:Real}
     for i in eachindex(f)
         m[i,i+1] .= f[i]
@@ -51,6 +87,14 @@ function accumulate_middle!(m, f::Vector{Matrix{T}}) where {T<:Real}
     m
 end
 
+@doc raw"""
+    accumulate_middle(f::Vector{Matrix{T}}) where {T<:Real}
+
+Compute the middle partial normalization for the matrices in `f`
+```math
+m_{i,j}(x_i,x_j) = \sum\limits_{x_{i+1},\ldots,x_{j-1}}\prod\limits_{k=i}^{j-1} e^{f_k(x_k,x_{k+1})}
+```
+"""
 function accumulate_middle(f::Vector{Matrix{T}}) where {T<:Real}
     m = OffsetArray([zeros(T, q1, q2) for q1 in collect(nstates(f))[1:end-1], q2 in collect(nstates(f))[2:end]], 0, +1) 
     accumulate_middle!(m, f)

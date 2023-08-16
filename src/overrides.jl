@@ -14,11 +14,11 @@ function sample_noalloc(rng::AbstractRNG, w)
     @assert false
 end
 
-struct ChainSampler{T,L,U} <: Sampleable{Multivariate,Discrete} where {T<:Real,L,U<:AbstractChainModel{T,L}}
-    chain :: U
+struct ChainSampler{T,L,U} <: Sampleable{Multivariate,Discrete} where {T<:Real,L}
+    chain :: ChainModel{T,L}
     r     :: OffsetVector{Matrix{T}, Vector{Matrix{T}}}
 
-    function ChainSampler(chain::AbstractChainModel{T,L}) where {T,L}
+    function ChainSampler(chain::ChainModel{T,L}) where {T,L}
         U = typeof(chain)
         new{T,L,U}(chain, accumulate_right(chain))
     end
@@ -120,6 +120,11 @@ function kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_marginals(p
     return plogp - plogq
 end
 
+"""
+    loglikelihood_gradient!(df, chain::ChainModel, x; neigmarg = neighbor_marginals(chain)
+
+In-place version of [`loglikelihood_gradient`](@ref)
+"""
 function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
         x::AbstractVector{<:AbstractVector{<:Integer}}; neigmarg = neighbor_marginals(chain)) where {T}
     for dfᵢ in df
@@ -138,6 +143,18 @@ function loglikelihood_gradient!(df::Vector{Matrix{T}}, chain::ChainModel{T},
         A::AbstractMatrix{<:Integer}; kw...) where {T}
     return loglikelihood_gradient!(df, chain, eachcol(A); kw...)
 end
+
+@doc raw"""
+    loglikelihood_gradient(chain::ChainModel, x; neigmarg = neighbor_marginals(chain))
+
+Compute the gradient of the loglikelihood $\mathcal{L}(\boldsymbol{x})$ of samples $\{x^{(\mu)}\}_{\mu=1,\ldots,M}$ with respect to the functions `chain.f`
+
+```math
+\frac{d\mathcal{L}(\boldsymbol{x})}{d f_i(y_i,y_{i+1})} = \sum_{\mu=1}^M \delta(y_i,x_i^{(\mu)})\delta(y_{i+1},x_{i+1}^{(\mu)}) - M p(y_i,y_{i+1}) 
+```
+
+Optionally pass pre-computed neighbor marginals
+"""
 function loglikelihood_gradient(chain::ChainModel{T}, x;
         neigmarg = neighbor_marginals(chain)) where {T}
     loglikelihood_gradient!(deepcopy(chain.f), chain, x; neigmarg)
