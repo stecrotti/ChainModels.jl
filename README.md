@@ -49,7 +49,7 @@ can be used to compute normalization, single-variable and nearest-neighbor margi
 \begin{eqnarray}
 Z =& \sum\limits_{x_i} l_{i-1}(x_i)r_{i+1}(x_i)\quad\forall i\\
 p(x_i) =& \frac1Z l_{i-1}(x_i)r_{i+1}(x_i)\\
-p(x_i,x_{i+1}) =& \frac1Z l_{i-1}(x_i) e^{f_i(x_i,x_{i+1})} r_{i+1}(x_i)\\
+p(x_i,x_{i+1}) =& \frac1Z l_{i-1}(x_i) e^{f_i(x_i,x_{i+1})} r_{i+2}(x_{i+1})\\
 \end{eqnarray}
 ```
 
