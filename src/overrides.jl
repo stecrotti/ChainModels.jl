@@ -51,20 +51,19 @@ function _logpdf(chain::ChainModel, x; logZ = lognormalization(chain))
     return logevaluate(chain, x) - logZ
 end
 
-function loglikelihood(chain::ChainModel, A::AbstractMatrix{<:Integer}; logZ = lognormalization(chain))
-    size(A, 1) == length(chain) || throw(DimensionMismatch("number of rows of `A` must match size of variable, got $(size(A, 1)) and $(length(chain))."))
-    # return sum(_logpdf(chain, xᵃ; logZ) for xᵃ in eachcol(A); init=0.0)
-    ll = 0.0
-    for xᵃ in eachcol(A)
-        ll += _logpdf(chain, xᵃ; logZ)
-    end
-    return ll
-end
-
-function loglikelihood(chain::ChainModel, x::AbstractVector{<:AbstractVector{<:Integer}}; logZ = lognormalization(chain))
+function loglikelihood(chain::ChainModel{T}, x::AbstractVector{<:AbstractVector{<:Integer}}; 
+        logZ = lognormalization(chain)) where T
     L = length(chain)
     all(length(xi) == L for xi in x) || throw(DimensionMismatch("inconsistent array dimensions"))
-    return sum(_logpdf(chain, xᵃ; logZ) for xᵃ in x)
+    ll = zero(T)
+    for xᵃ in x
+        ll += _logpdf(chain, xᵃ; logZ)
+    end
+    ll
+end
+
+function loglikelihood(chain::ChainModel, A::AbstractMatrix{<:Integer}; logZ = lognormalization(chain))
+    return loglikelihood(chain, eachcol(A))
 end
 
 # function expectation(f, p::Array{<:Real, N}) where N
@@ -142,4 +141,20 @@ end
 function loglikelihood_gradient(chain::ChainModel{T}, x;
         neigmarg = neighbor_marginals(chain)) where {T}
     loglikelihood_gradient!(deepcopy(chain.f), chain, x; neigmarg)
+end
+
+function rrule(::typeof(loglikelihood), chain::ChainModel{T,L}, x) where {T,L}
+    l = accumulate_left(chain)
+    r = accumulate_right(chain)
+    neigmarg = neighbor_marginals(chain; l, r)
+    logZ = lognormalization(chain; l)
+    y = loglikelihood(chain, x; logZ)
+    function loglikelihood_pullback(ȳ)
+        lbar = NoTangent()
+        fbar = loglikelihood_gradient(chain, x; neigmarg)
+        chainbar = Tangent{ChainModel{T,L}}(; f = fbar)
+        xbar = ZeroTangent()
+        return lbar, chainbar, xbar
+    end
+    return y, loglikelihood_pullback
 end

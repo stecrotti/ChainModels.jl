@@ -62,12 +62,19 @@ end
     @test (@inferred loglikelihood(chain, x)) == (@inferred loglikelihood(chain, y))
 end
 
-@testset "Gradient of log-likelihood" begin
+@testset "Gradient of log-likelihood - Finite Differences" begin
     x = rand(rng, chain, 10)
     ll(f) = @inferred loglikelihood(ChainModel(f), x)
-    df_true = grad(forward_fdm(4, 1), ll, f)[1]
+    df_true = FiniteDifferences.grad(forward_fdm(4, 1), ll, f)[1]
     df = @inferred loglikelihood_gradient(chain, x)
     @test df ≈ df_true
     y = collect(eachcol(x))
     @test df ≈ @inferred loglikelihood_gradient(chain, y)
+end
+
+@testset "Gradient of log-likelihood - Zygote" begin
+    x = rand(rng, chain, 10)
+    df_zygote = Zygote.gradient(chain -> loglikelihood(chain, x), chain)[1][1]
+    df = @inferred loglikelihood_gradient(chain, x)
+    @test df ≈ df_zygote
 end
