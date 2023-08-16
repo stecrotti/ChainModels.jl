@@ -29,7 +29,7 @@ end
 
 Compute the left partial normalization for the matrices in `f`
 ```math
-l_{i}(x_{i+1}) = \sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}
+l_{i}(x_{i+1}) = \log\sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}
 ```
 """
 function accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
@@ -57,7 +57,7 @@ end
 
 Compute the right partial normalization for the matrices in `f`
 ```math
-r_{i}(x_{i-1}) = \sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
+r_{i}(x_{i-1}) = \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
 ```
 """
 function accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
@@ -92,7 +92,7 @@ end
 
 Compute the middle partial normalization for the matrices in `f`
 ```math
-m_{i,j}(x_i,x_j) = \sum\limits_{x_{i+1},\ldots,x_{j-1}}\prod\limits_{k=i}^{j-1} e^{f_k(x_k,x_{k+1})}
+m_{i,j}(x_i,x_j) = \log\sum\limits_{x_{i+1},\ldots,x_{j-1}}\prod\limits_{k=i}^{j-1} e^{f_k(x_k,x_{k+1})}
 ```
 """
 function accumulate_middle(f::Vector{Matrix{T}}) where {T<:Real}
