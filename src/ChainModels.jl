@@ -10,9 +10,9 @@ import Distributions: DiscreteMultivariateDistribution, Sampleable, Multivariate
 import StatsBase: kldivergence
 import ChainRulesCore: rrule, Tangent, NoTangent, ZeroTangent
 
-export AbstractChainModel, ChainModel, nstates,
-        accumulate_left!, accumulate_right!, accumulate_left,
-        accumulate_right, accumulate_middle, logevaluate, evaluate, lognormalization,
+export ChainModel, nstates,
+        accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
+        accumulate_middle, accumulate_middle!, logevaluate, evaluate, lognormalization,
         normalization, normalize!, normalize,
         marginals, neighbor_marginals, pair_marginals,
         loglikelihood_gradient, loglikelihood_gradient!,
