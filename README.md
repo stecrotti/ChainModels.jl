@@ -57,6 +57,15 @@ p(x_i,x_{i+1}) =& \frac1Z l_{i-1}(x_i) e^{f_i(x_i,x_{i+1})} r_{i+1}(x_i)\\
 - The exponential parametrization is favorable because it puts no constraint on the values taken by the $f_i$'s, which can be positive or negative. One might as well parametrize directly as $f(x)=\prod\limits_{i=1}^{L-1} g_i(x_i,x_{i+1})$ with $g_i(x_i,x_{i+1})=e^{f_i(x_i,x_{i+1})}$, but must always ensure $g_i \ge 0$.
 
 ## Example
+
+Install with
+
+```julia
+import Pkg; Pkg.add("https://github.com/stecrotti/ChainModels.jl.git")
+```
+
+Create a `ChainModel` and compute some stuff
+
 ```julia
 using ChainModels
 
