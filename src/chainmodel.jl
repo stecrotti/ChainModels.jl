@@ -19,9 +19,6 @@ end
 accumulate_left(chain::ChainModel) = accumulate_left(chain.f)
 accumulate_right(chain::ChainModel) = accumulate_right(chain.f)
 accumulate_middle(chain::ChainModel) = accumulate_middle(chain.f)
-accumulate_left!(chain::ChainModel) = accumulate_left!(chain.f)
-accumulate_right!(chain::ChainModel) = accumulate_right!(chain.f)
-accumulate_middle!(chain::ChainModel) = accumulate_middle!(chain.f)
 
 """
     Base.length(::ChainModel{T,L})
