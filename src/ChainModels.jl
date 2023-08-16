@@ -8,6 +8,7 @@ import Random: AbstractRNG
 import Distributions: DiscreteMultivariateDistribution, Sampleable, Multivariate, Discrete,
     logpdf, pdf, _rand!, eltype, sampler, _logpdf, loglikelihood, mean, var, cov, entropy
 import StatsBase: kldivergence
+import ChainRulesCore: rrule, Tangent, NoTangent, ZeroTangent
 
 export AbstractChainModel, ChainModel, nstates,
         accumulate_left!, accumulate_right!, accumulate_left,

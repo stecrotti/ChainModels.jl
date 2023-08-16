@@ -6,6 +6,7 @@ using Distributions
 using FiniteDifferences
 using StatsBase
 using Random
+using Zygote
 
 rng = MersenneTwister(0)
 qs = (4,3,1,2)

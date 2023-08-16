@@ -62,12 +62,37 @@ end
     @test (@inferred loglikelihood(chain, x)) == (@inferred loglikelihood(chain, y))
 end
 
-@testset "Gradient of log-likelihood" begin
+@testset "Gradient of log-likelihood - Finite Differences" begin
     x = rand(rng, chain, 10)
     ll(f) = @inferred loglikelihood(ChainModel(f), x)
-    df_true = grad(forward_fdm(4, 1), ll, f)[1]
+    df_true = FiniteDifferences.grad(forward_fdm(4, 1), ll, f)[1]
     df = @inferred loglikelihood_gradient(chain, x)
     @test df ≈ df_true
     y = collect(eachcol(x))
     @test df ≈ @inferred loglikelihood_gradient(chain, y)
 end
+
+@testset "Gradient of log-likelihood - Zygote" begin
+    x = rand(rng, chain, 10)
+    df_zygote = Zygote.gradient(chain -> loglikelihood(chain, x), chain)[1][1]
+    df = @inferred loglikelihood_gradient(chain, x)
+    @test df ≈ df_zygote
+end
+
+# @testset "MLE by Gradient descent" begin
+#     x = rand(rng, chain, 10^2)
+#     M = size(x, 2)
+#     η = 1e-1 / M
+#     df = deepcopy(chain.f)
+#     fhat = [rand(rng, size(fᵢ)...) for fᵢ in chain.f]
+#     niter = 100
+#     kls = zeros(niter)
+#     for it in 1:niter
+#         loglikelihood_gradient!(df, ChainModel(fhat), x)
+#         for (dfᵢ, fᵢ) in zip(df, fhat)
+#             fᵢ .+= η * dfᵢ
+#         end
+#         kls[it] = kldivergence(chain, ChainModel(fhat))
+#     end
+#     @test issorted(kls; rev=true)
+# end
