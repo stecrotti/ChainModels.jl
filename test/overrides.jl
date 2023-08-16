@@ -78,3 +78,21 @@ end
     df = @inferred loglikelihood_gradient(chain, x)
     @test df ≈ df_zygote
 end
+
+# @testset "MLE by Gradient descent" begin
+#     x = rand(rng, chain, 10^2)
+#     M = size(x, 2)
+#     η = 1e-1 / M
+#     df = deepcopy(chain.f)
+#     fhat = [rand(rng, size(fᵢ)...) for fᵢ in chain.f]
+#     niter = 100
+#     kls = zeros(niter)
+#     for it in 1:niter
+#         loglikelihood_gradient!(df, ChainModel(fhat), x)
+#         for (dfᵢ, fᵢ) in zip(df, fhat)
+#             fᵢ .+= η * dfᵢ
+#         end
+#         kls[it] = kldivergence(chain, ChainModel(fhat))
+#     end
+#     @test issorted(kls; rev=true)
+# end
