@@ -70,6 +70,6 @@ marg = marginals(p)
 neigmarg = neighbor_marginals(p)
 pairmarg = pair_marginals(p)
 S = entropy(p)
-x = [rand(p) for _ in 1:500]
+x = rand(p, 500)
 logL = loglikelihood(p, x)
 ```
