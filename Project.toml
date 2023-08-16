@@ -14,3 +14,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 julia = "1.9"
+ChainRulesCore = "1.16"
+Distributions = "0.25"
+LogExpFunctions = "0.3"
+OffsetArrays = "1.12"
+StatsBase = "0.34"
