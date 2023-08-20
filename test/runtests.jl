@@ -7,6 +7,10 @@ using FiniteDifferences
 using StatsBase
 using Random
 using Zygote
+using Aqua
+
+Aqua.test_all(ChainModels, ambiguities=false)
+Aqua.test_ambiguities(ChainModels)
 
 rng = MersenneTwister(0)
 qs = (4,3,1,2)

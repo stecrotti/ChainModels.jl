@@ -17,7 +17,7 @@ export ChainModel, nstates,
         marginals, neighbor_marginals, pair_marginals,
         loglikelihood_gradient, loglikelihood_gradient!,
         # overrides from Distributions, StatsBase
-        rand, rand!, logpdf, loglikelihood, pdf, mean, var, cov, entropy,
+        rand, logpdf, loglikelihood, pdf, mean, var, cov, entropy,
         kldivergence
         
 
