@@ -41,16 +41,16 @@ For a chain of length $L$ with variables taking one of $q$ values, the following
 The efficiency of the operations mentioned above relies on some strategic pre-computations. For example, partial normalizations from the left and from the right ($l$ and $r$, respectively)
 ```math
 \begin{eqnarray}
-l_{i}(x_{i+1}) =& \sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}\\
-r_{i}(x_{i-1}) =& \sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
+l_{i}(x_{i+1}) =& \log\sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}\\
+r_{i}(x_{i-1}) =& \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
 \end{eqnarray}
 ```
 can be used to compute normalization, single-variable and nearest-neighbor marginals
 ```math
 \begin{eqnarray}
-Z =& \sum\limits_{x_i} l_{i-1}(x_i)r_{i+1}(x_i)\quad\forall i\\
-p(x_i) =& \frac1Z l_{i-1}(x_i)r_{i+1}(x_i)\\
-p(x_i,x_{i+1}) =& \frac1Z l_{i-1}(x_i) e^{f_i(x_i,x_{i+1})} r_{i+2}(x_{i+1})\\
+Z =& \sum\limits_{x_i} e^{l_{i-1}(x_i)+r_{i+1}(x_i)}\quad\forall i\\
+p(x_i) =& \frac1Z e^{l_{i-1}(x_i)+r_{i+1}(x_i)}\\
+p(x_i,x_{i+1}) =& \frac1Z e^{l_{i-1}(x_i) + f_i(x_i,x_{i+1}) + r_{i+2}(x_{i+1})}\\
 \end{eqnarray}
 ```
 

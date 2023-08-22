@@ -73,7 +73,10 @@ lognormalization(chain::ChainModel; l = accumulate_left(chain)) = logsumexp(last
 Compute the normalization
 
 ```math
-Z = \sum\limits_{x_1,\ldots,x_L}\prod\limits_{i=1}^{L-1} e^{f_i(x_i,x_{i+1})}
+\begin{aligned}
+Z =& \sum\limits_{x_1,\ldots,x_L}\prod\limits_{i=1}^{L-1} e^{f_i(x_i,x_{i+1})}\\
+  =& \sum\limits_{x_L} e^{l_{L-1}(x_L)}
+\end{aligned}
 ```
 
 Optionally, pass the pre-computed left partial normalization
@@ -83,7 +86,7 @@ normalization(chain::ChainModel; l = accumulate_left(chain)) = exp(lognormalizat
 @doc raw"""
     normalize!(chain::ChainModel; logZ = lognormalization(chain))
 
-Divides each factor by $Z^{1/L}$ so that the normalization becomes $1$.
+Divide each factor by $Z^{1/L}$ so that the normalization becomes $1$.
 """
 function normalize!(chain::ChainModel; logZ = lognormalization(chain))
     for fᵢ in chain.f
@@ -102,10 +105,13 @@ normalize(chain::ChainModel; logZ = lognormalization(chain)) = normalize!(deepco
 @doc raw"""
     marginals(chain::ChainModel; l = accumulate_left(chain), r = accumulate_right(chain))
 
-Compute single-variable marginals $p(x_i=x)$
+Compute single-variable marginals
 
 ```math
-p(x_i=x) = \sum_{x_1, x_2, \ldots, x_L} p(x_1, x_2, \ldots, x_L) \delta(x_i,x)
+\begin{aligned}
+p(x_i=x) &= \sum_{x_1, x_2, \ldots, x_L} p(x_1, x_2, \ldots, x_L) \delta(x_i,x)\\
+=& \frac1Z e^{l_{i-1}(x)+r_{i+1}(x)}
+\end{aligned}
 ```
 
 Optionally, pass the pre-computed left and right partial normalization
@@ -122,10 +128,13 @@ end
 @doc raw"""
     neighbor_marginals(chain::ChainModel; l = accumulate_left(chain), r = accumulate_right(chain))
 
-Compute nearest-neighbor marginals $p(x_i=x,x_{i+1}=x')$
+Compute nearest-neighbor marginals
 
 ```math
-p(x_i=x,x_{i+1}=x') = \sum_{x_1, x_2, \ldots, x_L} p(x_1, x_2, \ldots, x_L) \delta(x_i,x) \delta(x_{i+1},x')
+\begin{aligned}
+p(x_i=x,x_{i+1}=x') =& \sum_{x_1, x_2, \ldots, x_L} p(x_1, x_2, \ldots, x_L) \delta(x_i,x) \delta(x_{i+1},x')\\
+=& \frac1Z e^{l_{i-1}(x) + f_i(x,x') + r_{i+2}(x')}
+\end{aligned}
 ```
 
 Optionally, pass the pre-computed left and right partial normalization
@@ -143,10 +152,13 @@ end
 @doc raw"""
     neighbor_marginals(chain::ChainModel; l = accumulate_left(chain), r = accumulate_right(chain), m = accumulate_middle(chain))
 
-Compute pair marginals $p(x_i=x,x_j=x')$
+Compute pair marginals
 
 ```math
-p(x_i=x,x_j=x') = \sum_{x_1, x_2, \ldots, x_L} p(x_1, x_2, \ldots, x_L) \delta(x_i,x) \delta(x_j,x')
+\begin{aligned}
+p(x_i=x,x_j=x') =& \sum_{x_1, x_2, \ldots, x_L} p(x_1, x_2, \ldots, x_L) \delta(x_i,x) \delta(x_j,x')\\
+=&  \frac1Z e^{l_{i-1}(x) + m_{i,j}(x,x') + r_{j+1}(x')}
+\end{aligned}
 ```
 
 Optionally, pass the pre-computed left, right and middle partial normalization
