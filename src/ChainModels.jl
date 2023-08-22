@@ -15,7 +15,7 @@ export ChainModel, nstates,
         accumulate_middle, accumulate_middle!, logevaluate, evaluate, lognormalization,
         normalization, normalize!, normalize,
         marginals, neighbor_marginals, pair_marginals,
-        loglikelihood_gradient, loglikelihood_gradient!,
+        loglikelihood_gradient, loglikelihood_gradient!, energy
         # overrides from Distributions, StatsBase
         rand, logpdf, loglikelihood, pdf, mean, var, cov, entropy,
         kldivergence

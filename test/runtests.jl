@@ -9,8 +9,10 @@ using Random
 using Zygote
 using Aqua
 
-Aqua.test_all(ChainModels, ambiguities=false)
-Aqua.test_ambiguities(ChainModels)
+@testset "Aqua" begin
+    Aqua.test_all(ChainModels, ambiguities=false)
+    Aqua.test_ambiguities(ChainModels)
+end
 
 rng = MersenneTwister(0)
 qs = (4,3,1,2)

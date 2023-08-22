@@ -29,3 +29,9 @@ end
         end
     end
 end
+
+@testset "Energy" begin
+    E = @inferred energy(chain)
+    E_exhaust = sum(-logevaluate(chain, x)*p for (x,p) in pairs(P))
+    @test E ≈ E_exhaust
+end

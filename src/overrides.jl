@@ -63,14 +63,8 @@ function loglikelihood(chain::ChainModel{T}, x::AbstractVector{<:AbstractVector{
 end
 
 function loglikelihood(chain::ChainModel, A::AbstractMatrix{<:Integer}; logZ = lognormalization(chain))
-    return loglikelihood(chain, eachcol(A))
+    return loglikelihood(chain, eachcol(A); logZ)
 end
-
-# function expectation(f, p::Array{<:Real, N}) where N
-#     sum(f(x...) * p[x...] for x in Iterators.product(axes(p)...))
-# end
-# expectation(p) = expectation(identity, p)
-
 
 expectation(f, p::Matrix{<:Real}) = sum(f(xi,xj) * p[xi, xj] for xi in axes(p,1), xj in axes(p,2))
 expectation(f, p::Vector{<:Real}) = sum(f(xi) * p[xi] for xi in eachindex(p))
@@ -98,18 +92,13 @@ function cov(chain::ChainModel{T}; m = marginals(chain), p = pair_marginals(chai
     c
 end
 
-function entropy(chain::ChainModel; nmarg = neighbor_marginals(chain))
-    logZ = lognormalization(chain)
-    avg_logf = 0.0
-    for (fᵢ,pᵢ) in zip(chain.f, nmarg)
-        avg_logf += expectation((xᵢ,xᵢ₊₁)->fᵢ[xᵢ,xᵢ₊₁], pᵢ)
-    end
-    # avg_logf = sum(expectation((xᵢ,xᵢ₊₁)->fᵢ[xᵢ,xᵢ₊₁], pᵢ) for (fᵢ,pᵢ) in zip(chain.f, nmarg))
-    return logZ - avg_logf
+function entropy(chain::ChainModel; logZ = lognormalization(chain), en = energy(chain))
+    return logZ + en
 end
 
 function kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_marginals(p))
-    plogp = - entropy(p; nmarg)
+    en = energy(p; nmarg)
+    plogp = - entropy(p; en)
     plogq = 0.0
     for i in eachindex(nmarg) 
         plogq += expectation((xᵢ,xᵢ₊₁)->q.f[i][xᵢ,xᵢ₊₁], nmarg[i])

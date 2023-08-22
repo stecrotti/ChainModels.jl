@@ -182,3 +182,25 @@ function pair_marginals(chain::ChainModel{T};
     end
     p
 end
+
+@doc raw"""
+    energy(chain::ChainModel; nmarg = neighbor_marginals(chain))
+
+Compute the "energy"
+
+```math
+\begin{aligned}
+E =& \mathbb{E} \sum_{x_1, x_2, \ldots, x_L} \left[ -\sum\limits_{i=1}^{L-1}f_i(x_i,x_{i+1}) \right] p(x_1, x_2, \ldots, x_L)\\
+=&  -\sum\limits_{i=1}^{L-1} \sum_{x,x'} f_i(x,x') p(x_i=x,x_{i+1}=x')
+\end{aligned}
+```
+
+Optionally, pass the pre-computed neighbor marginals
+"""
+function energy(chain::ChainModel; nmarg = neighbor_marginals(chain))
+    en = 0.0
+    for (fᵢ,pᵢ) in zip(chain.f, nmarg)
+        en -= expectation((xᵢ,xᵢ₊₁)->fᵢ[xᵢ,xᵢ₊₁], pᵢ)
+    end
+    en
+end

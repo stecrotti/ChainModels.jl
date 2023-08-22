@@ -24,6 +24,7 @@ normalize
 marginals
 neighbor_marginals
 pair_marginals
+energy
 loglikelihood_gradient
 loglikelihood_gradient!
 ```
