@@ -24,8 +24,8 @@ end
     include("chainmodel.jl")
 end
 
-# @testset "Overrides" begin
-#     include("overrides.jl")
-# end
+@testset "Overrides" begin
+    include("overrides.jl")
+end
 
 nothing

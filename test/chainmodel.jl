@@ -1,4 +1,4 @@
-@testset "Periodic BC" begin
+@testset "Open BC" begin
     L = length(chain)
     P = [evaluate(chain, x) for x in Iterators.product((1:q for q in nstates(chain))...)]
     @testset "normalization" begin

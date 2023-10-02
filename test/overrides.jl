@@ -1,3 +1,5 @@
+L = length(qs)
+
 @testset "PDF" begin
     x = [rand(rng, 1:q) for q in qs]
     @test pdf(chain, x) ≈ evaluate(chain, x) / normalization(chain)
