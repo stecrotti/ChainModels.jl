@@ -1,23 +1,20 @@
 module ChainModels
 
-import Base: show, length
-import LogExpFunctions: logsumexp
-import OffsetArrays: OffsetArray, OffsetVector
-import LinearAlgebra: normalize!,  normalize
-import Random: AbstractRNG
-import Distributions: DiscreteMultivariateDistribution, Sampleable, Multivariate, Discrete,
-    logpdf, pdf, _rand!, eltype, sampler, _logpdf, loglikelihood, mean, var, cov, entropy
-import StatsBase: kldivergence
-import ChainRulesCore: rrule, Tangent, NoTangent, ZeroTangent
+using LogExpFunctions: logsumexp
+using OffsetArrays: OffsetArray, OffsetVector
+using LinearAlgebra: LinearAlgebra, normalize, normalize!
+using Random: Random, AbstractRNG, rand
+using Distributions: Distributions, DiscreteMultivariateDistribution, 
+    Sampleable, Multivariate, Discrete
+using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence
 
 export ChainModel, nstates,
         accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
         accumulate_middle, accumulate_middle!, logevaluate, evaluate, lognormalization,
         normalization, normalize!, normalize,
-        marginals, neighbor_marginals, pair_marginals,
-        loglikelihood_gradient, loglikelihood_gradient!, energy
+        marginals, neighbor_marginals, pair_marginals, energy
         # overrides from Distributions, StatsBase
-        rand, logpdf, loglikelihood, pdf, mean, var, cov, entropy,
+        rand, mean, var, cov, entropy,
         kldivergence
         
 
