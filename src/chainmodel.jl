@@ -25,7 +25,7 @@ accumulate_middle(chain::ChainModel) = accumulate_middle(chain.f)
 
 Returns `L`, the number of variables
 """
-length(::ChainModel{T,L}) where {T,L} = L
+Base.length(::ChainModel{T,L}) where {T,L} = L
 
 """
     nstates(chain::ChainModel{T,L})
@@ -34,7 +34,7 @@ Returns a `NTuple{L,Int}` with the number of values each variable can take.
 """
 nstates(chain::ChainModel{T,L}) where {T,L} = NTuple{L,Int}(nstates(chain.f))
 
-function show(io::IO, ::ChainModel{T,L}) where {T,L}
+function Base.show(io::IO, ::ChainModel{T,L}) where {T,L}
     println(io, "ChainModel{$T} with $L variables")
 end
 
@@ -88,7 +88,7 @@ normalization(chain::ChainModel; l = accumulate_left(chain)) = exp(lognormalizat
 
 Divide each factor by $Z^{1/L}$ so that the normalization becomes $1$.
 """
-function normalize!(chain::ChainModel; logZ = lognormalization(chain))
+function LinearAlgebra.normalize!(chain::ChainModel; logZ = lognormalization(chain))
     for fᵢ in chain.f
         fᵢ .-= logZ / length(chain.f)
     end
@@ -100,7 +100,7 @@ end
 
 Return a new `ChainModel` equivalent to `chain` but rescaled so that normalization equal to $1$.
 """
-normalize(chain::ChainModel; logZ = lognormalization(chain)) = normalize!(deepcopy(chain); logZ)
+LinearAlgebra.normalize(chain::ChainModel; logZ = lognormalization(chain)) = normalize!(deepcopy(chain); logZ)
 
 @doc raw"""
     marginals(chain::ChainModel; l = accumulate_left(chain), r = accumulate_right(chain))
@@ -150,7 +150,7 @@ function neighbor_marginals(chain::ChainModel;
 end
 
 @doc raw"""
-    neighbor_marginals(chain::ChainModel; l = accumulate_left(chain), r = accumulate_right(chain), m = accumulate_middle(chain))
+    pair_marginals(chain::ChainModel; l = accumulate_left(chain), r = accumulate_right(chain), m = accumulate_middle(chain))
 
 Compute pair marginals
 

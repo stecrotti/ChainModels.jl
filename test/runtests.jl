@@ -3,10 +3,8 @@ using Test
 using OffsetArrays
 using InvertedIndices
 using Distributions
-using FiniteDifferences
 using StatsBase
 using Random
-using Zygote
 using Aqua
 
 @testset "Aqua" begin
