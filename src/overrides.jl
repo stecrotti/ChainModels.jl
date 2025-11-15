@@ -43,7 +43,7 @@ function Distributions._rand!(rng::AbstractRNG, chain::ChainModel, x::AbstractVe
     return _onesample!(rng, ChainSampler(chain), x)
 end
 
-function Distributions_rand!(rng::AbstractRNG, s::ChainSampler, A::DenseMatrix{<:Integer})
+function Distributions._rand!(rng::AbstractRNG, s::ChainSampler, A::DenseMatrix{<:Integer})
     return stack(_onesample!(rng, s, x) for x in eachcol(A))
 end
 
@@ -98,7 +98,7 @@ function StatsBase.loglikelihood(chain::ChainModel{T}, x::AbstractVector{<:Abstr
     all(length(xi) == L for xi in x) || throw(DimensionMismatch("inconsistent array dimensions"))
     ll = zero(T)
     for xᵃ in x
-        ll += _logpdf(chain, xᵃ; logZ)
+        ll += Distributions._logpdf(chain, xᵃ; logZ)
     end
     ll
 end
