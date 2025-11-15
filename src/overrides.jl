@@ -11,7 +11,6 @@ function sample_noalloc(rng::AbstractRNG, w)
         i += 1
         cw > t && return i
     end
-    @assert false
 end
 
 struct ChainSampler{T,L,U} <: Sampleable{Multivariate,Discrete} where {T<:Real,L}
