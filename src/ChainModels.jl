@@ -6,7 +6,7 @@ using LinearAlgebra: LinearAlgebra, normalize, normalize!
 using Random: Random, AbstractRNG, rand
 using Distributions: Distributions, DiscreteMultivariateDistribution, 
     Sampleable, Multivariate, Discrete
-using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence
+using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence, loglikelihood
 
 export ChainModel, nstates,
         accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
@@ -15,7 +15,7 @@ export ChainModel, nstates,
         marginals, neighbor_marginals, pair_marginals, energy
         # overrides from Distributions, StatsBase
         rand, mean, var, cov, entropy,
-        kldivergence
+        kldivergence, loglikelihood
         
 
 include("accumulators.jl")

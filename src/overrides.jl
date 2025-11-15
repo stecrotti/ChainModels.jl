@@ -91,3 +91,18 @@ function StatsBase.kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_m
     plogq -= lognormalization(q)
     return plogp - plogq
 end
+
+function StatsBase.loglikelihood(chain::ChainModel{T}, x::AbstractVector{<:AbstractVector{<:Integer}}; 
+        logZ = lognormalization(chain)) where T
+    L = length(chain)
+    all(length(xi) == L for xi in x) || throw(DimensionMismatch("inconsistent array dimensions"))
+    ll = zero(T)
+    for xᵃ in x
+        ll += _logpdf(chain, xᵃ; logZ)
+    end
+    ll
+end
+
+function StatsBase.loglikelihood(chain::ChainModel, A::AbstractMatrix{<:Integer}; logZ = lognormalization(chain))
+    return loglikelihood(chain, eachcol(A); logZ)
+end
