@@ -55,3 +55,9 @@ end
     kl_exact = sum(px*log(px/qx) for (px, qx) in zip(P, Q))
     @test kl ≈ kl_exact
 end
+
+@testset "Log-likelihood" begin
+    x = @inferred rand(rng, chain, 100)
+    y = collect(eachcol(x))
+    @test (@inferred loglikelihood(chain, x)) == (@inferred loglikelihood(chain, y))
+end
