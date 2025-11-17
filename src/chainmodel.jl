@@ -42,6 +42,11 @@ function ChainModel(f::Vector{Matrix{T}}, h::Vector{Vector{T}}) where {T<:Real}
     return ChainModel(fnew)
 end
 
+"""
+    rand_chain_model([rng], L::Integer, q::Integer)
+
+Return a  `ChainModel` of length `L` and `q` states for each variable, with random entries
+"""
 function rand_chain_model(rng::AbstractRNG, L::Integer, q::Integer)
     f = [randn(rng, q, q) for _ in 1:(L-1)]
     return ChainModel(f)
