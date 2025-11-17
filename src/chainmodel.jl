@@ -16,6 +16,40 @@ struct ChainModel{T,L} <: DiscreteMultivariateDistribution
     end
 end
 
+"""
+    ChainModel(f::Vector{Matrix{T}}, h::Vector{Vector{T}})
+
+Construct a ChainModel from neighboring interactions `f` and single-site biases `h`.
+"""
+function ChainModel(f::Vector{Matrix{T}}, h::Vector{Vector{T}}) where {T<:Real}
+    Lf = length(f) + 1
+    Lh = length(h)
+    Lh == Lf || throw(ArgumentError("Incompatible lengths, got $Lf and $Lh"))
+    for i in eachindex(f)
+        sz_i, sz_ip1 = size(f[i])
+        sz_i == length(h[i]) || throw(ArgumentError("Inconsistency in sizes for f and h"))
+        sz_ip1 == length(h[i+1]) || throw(ArgumentError("Inconsistency in sizes for f and h"))
+    end
+    fnew = deepcopy(f)
+    for i in eachindex(f)
+        for sip1 in axes(f[i], 2)
+            for si in axes(f[i], 1)
+                field = ((2.0 ^ (i==1)) * h[i][si] + (2.0 ^ (i==Lf-1)) * h[i+1][sip1]) / 2
+                fnew[i][si,sip1] = f[i][si,sip1] + field
+            end
+        end
+    end
+    return ChainModel(fnew)
+end
+
+function rand_chain_model(rng::AbstractRNG, L::Integer, q::Integer)
+    f = [randn(rng, q, q) for _ in 1:(L-1)]
+    return ChainModel(f)
+end
+function rand_chain_model(L::Integer, q::Integer)
+    return rand_chain_model(Random.default_rng(), L, q)
+end
+
 accumulate_left(chain::ChainModel) = accumulate_left(chain.f)
 accumulate_right(chain::ChainModel) = accumulate_right(chain.f)
 accumulate_middle(chain::ChainModel) = accumulate_middle(chain.f)

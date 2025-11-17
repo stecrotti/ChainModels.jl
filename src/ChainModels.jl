@@ -8,7 +8,7 @@ using Distributions: Distributions, DiscreteMultivariateDistribution,
     Sampleable, Multivariate, Discrete
 using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence, loglikelihood
 
-export ChainModel, nstates,
+export ChainModel, rand_chain_model, nstates,
         accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
         accumulate_middle, accumulate_middle!, logevaluate, evaluate, lognormalization,
         normalization, normalize!, normalize,
