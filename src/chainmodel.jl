@@ -66,6 +66,9 @@ Returns `L`, the number of variables
 """
 Base.length(::ChainModel{T,L}) where {T,L} = L
 
+# treat a ChainModel as a scalar when broadcasting
+Base.broadcastable(chain::ChainModel) = Ref(chain)
+
 """
     nstates(chain::ChainModel{T,L})
 
