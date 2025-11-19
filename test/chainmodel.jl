@@ -1,3 +1,8 @@
+@testset "broadcastable" begin
+    X = collect.(eachcol(rand(chain, 10)))
+    @test logpdf.(chain, X) == logpdf.((chain,), X)
+end
+
 @testset "Constructor with fields" begin
     h = [rand(qi) for qi in qs]
     p = ChainModel(f, h)
