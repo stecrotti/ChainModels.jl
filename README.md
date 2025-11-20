@@ -40,7 +40,7 @@ The efficiency of the operations mentioned above relies on some strategic pre-co
 ```math
 \begin{eqnarray}
 l_{i}(x_{i+1}) =& \log\sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}\\
-r_{i}(x_{i-1}) =& \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
+r_{i}(x_{i-1}) =& \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^{L-1} e^{f_j(x_j,x_{j+1})}
 \end{eqnarray}
 ```
 can be used to compute normalization, single-variable and nearest-neighbor marginals
