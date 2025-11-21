@@ -149,7 +149,7 @@ function k_accumulate_right!(r, f::AbstractVector{<:AbstractArray{T,K}}) where {
     r[end] .= 0
     for i in reverse(eachindex(f))
         for s in Iterators.product(axes(r[i+K-1])...)
-            r[i+K-1][s...] = @views logsumexp(f[i][s...,:] + r[i+K][s[1:end-1]...,:])
+            r[i+K-1][s...] = @views logsumexp(f[i][s...,:] + r[i+K][s[2:end]...,:])
         end
     end
     return r
