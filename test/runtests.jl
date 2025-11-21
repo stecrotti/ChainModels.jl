@@ -24,4 +24,8 @@ end
     include("overrides.jl")
 end
 
+@testset "KChainModel" begin
+    include("k_chainmodel.jl")
+end
+
 nothing
