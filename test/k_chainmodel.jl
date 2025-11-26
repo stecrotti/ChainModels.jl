@@ -27,6 +27,8 @@ nm_new = neighbor_marginals(kchain)
 
 @test avg_energy(kchain) ≈ avg_energy(kchain)
 
+pair_marginals(kchain) ≈ pair_marginals(chain)
+
 
 K = 3
 f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
