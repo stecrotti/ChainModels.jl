@@ -17,16 +17,33 @@ r = accumulate_right(f)
 kr = k_accumulate_right(f)
 @test r ≈ kr
 
-logZex = log(sum(evaluate(chain,x) for x in Iterators.product((1:q for q in qs)...)))
+m_old = marginals(ChainModel(f))
+m_new = Km1_neighbor_marginals(KChainModel(f))
+@test m_old ≈ m_new
+@test m_old ≈ marginals(KChainModel(f))
+
+nm_old = neighbor_marginals(ChainModel(f))
+nm_new = neighbor_marginals(KChainModel(f))
+@test nm_old ≈ nm_new
+
+@test energy(ChainModel(f)) ≈ energy(KChainModel(f))
+
 
 K = 3
 f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
 chain = KChainModel(f)
-l = k_accumulate_left(f)
-r = k_accumulate_right(f)
+l = accumulate_left(chain)
+r = accumulate_right(chain)
 
-for i in 1:L-K+2
-    @show logsumexp(l[i-1] + r[i+K-1])
+logZex = log(sum(evaluate(chain, x) for x in Iterators.product((1:q for q in qs)...)))
+
+@test all(1:L-K+2) do i
+    logsumexp(l[i-1] + r[i+K-1]) ≈ logZex
 end
 
-@test reduce(logsumexp, last(l)) ≈ reduce(logsumexp, first(r))
+@test reduce(logsumexp, last(l)) ≈ reduce(logsumexp, first(r)) ≈ logZex
+
+
+K = 1
+f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
+chain = KChainModel(f)
