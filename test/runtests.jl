@@ -5,6 +5,7 @@ using InvertedIndices
 using Distributions
 using StatsBase
 using Random
+using LogExpFunctions
 
 rng = MersenneTwister(0)
 qs = (4,3,1,2)
