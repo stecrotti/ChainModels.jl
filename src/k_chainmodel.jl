@@ -79,15 +79,9 @@ end
 # treat a KChainModel as a scalar when broadcasting
 Base.broadcastable(chain::KChainModel) = Ref(chain)
 
-function evaluate_factors(chain::KChainModel, x)
-    K = getK(chain)
-    return (chain.f[i][x[i:i+K-1]...] for i in eachindex(chain.f))
-end
-
-function logevaluate(chain::KChainModel, x)
+function logevaluate(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,K}}}, x) where {T,K}
     length(x) == length(chain) || throw(ArgumentError("x should be of same length as chain"))
-    K = getK(chain)
-    return @views sum(chain.f[i][x[i:i+K-1]...] for i in eachindex(chain.f); init=0.0)
+    return @views sum(chain.f[i][x[i:i+K-1]...] for i in eachindex(chain.f); init=zero(T))::T
 end
 
 """
@@ -103,7 +97,13 @@ evaluate(chain::KChainModel, x) = exp(logevaluate(chain, x))
 Conceptually equivalent to `log(normalization(chain))`, less prone to numerical issues
 """
 function lognormalization(chain::KChainModel; l = accumulate_left(chain)) 
-    return reduce(logsumexp, last(l))
+    return logsumexp(last(l))
+end
+# special case for K=1
+function lognormalization(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,1}}}; 
+    l = accumulate_left(chain)) where T
+
+    return sum(logsumexp.(chain.f); init=zero(T))
 end
 
 function normalization(chain::KChainModel; l = accumulate_left(chain)) 
