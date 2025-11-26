@@ -17,6 +17,8 @@ struct KChainModel{T<:AbstractVector{<:AbstractArray{<:Real}}} <: DiscreteMultiv
     end
 end
 
+# const KChain{K} = KChainModel{<:AbstractVector{<:AbstractArray{T,K}}} where T
+
 function KChainModel(f::AbstractVector{<:AbstractArray{<:Real,K}}, 
         h::AbstractVector{<:AbstractVector{<:Real}}) where {K}
     
@@ -46,12 +48,20 @@ function rand_k_chain_model(K::Integer, L::Integer, q::Integer)
     return rand_k_chain_model(Random.default_rng(), K, L, q)
 end
 
+nstates(chain::KChainModel) = Tuple(nstates(chain.f))
+
 getK(::KChainModel{<:AbstractVector{<:AbstractArray{<:Real,K}}}) where {K} = K
 
 Base.length(chain::KChainModel) = length(chain.f) + getK(chain) - 1
 
 accumulate_left(chain::KChainModel) = k_accumulate_left(chain.f)
 accumulate_right(chain::KChainModel) = k_accumulate_right(chain.f)
+accumulate_middle(chain::KChainModel) = accumulate_middle(chain.f)
+
+
+function Base.show(io::IO, chain::KChainModel{T}) where {T}
+    println(io, "KChainModel{$T} with $(length(chain)) variables")
+end
 
 """
     rand_kchain_model([rng], K::Integer, L::Integer, q::Integer)
@@ -159,6 +169,26 @@ end
 
 function marginals(chain::KChainModel; kw...)
     return nbody_neighbor_marginals(1, chain; kw...)
+end
+
+function pair_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,2}}} ;
+        l = accumulate_left(chain), r = accumulate_right(chain), 
+        m = accumulate_middle(chain)) where T
+    L = length(chain)
+    p = [zeros(T, q1, q2) for q1 in nstates(chain), q2 in nstates(chain)]
+    for i in 1:L-1
+        for j in i+1:L
+            for xᵢ in axes(p[i,j], 1)
+                for xⱼ in axes(p[i,j], 2)
+                    p[i,j][xᵢ,xⱼ] = l[i-1][xᵢ] + m[i,j][xᵢ,xⱼ] + r[j+1][xⱼ]
+                end
+            end
+            p[i,j] .-= logsumexp(p[i,j])
+            p[i,j] .= exp.(p[i,j])
+            p[j,i] .= p[i,j]'
+        end
+    end
+    p
 end
 
 function avg_energy(chain::KChainModel; nmarg = neighbor_marginals(chain))
