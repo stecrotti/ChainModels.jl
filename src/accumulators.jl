@@ -1,12 +1,3 @@
-# """
-#     nstates(f::Vector{Matrix{T}}) where {T<:Real}
-
-# Returns an iterator with the number of values each variable can take.
-# """
-# function nstates(f::Vector{Matrix{T}}) where {T<:Real}
-#     N = length(f)
-#     (i == length(f) + 1 ? size(f[end],2) : size(f[i],1) for i in 1:N+1)
-# end
 """
     nstates(f::AbstractVector{<:AbstractArray{<:Real}})
 
@@ -126,6 +117,14 @@ function k_accumulate_left!(l, f::AbstractVector{<:AbstractArray{T,K}}) where {T
     return l
 end
 
+# special case for K=1
+function k_accumulate_left!(l, ::AbstractVector{<:AbstractArray{T,1}}) where {T<:Real}
+    for li in l
+        li .= 0
+    end
+    return l
+end
+
 @doc raw"""
     k_accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
 
@@ -151,6 +150,13 @@ function k_accumulate_right!(r, f::AbstractVector{<:AbstractArray{T,K}}) where {
         for s in Iterators.product(axes(r[i+K-1])...)
             r[i+K-1][s...] = @views logsumexp(f[i][s...,:] + r[i+K][s[2:end]...,:])
         end
+    end
+    return r
+end
+# special case for K=1
+function k_accumulate_right!(r, ::AbstractVector{<:AbstractArray{T,1}}) where {T<:Real}
+    for ri in r
+        ri .= 0
     end
     return r
 end

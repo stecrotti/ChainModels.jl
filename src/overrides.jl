@@ -78,12 +78,14 @@ function StatsBase.cov(chain::ChainModel{T}; m = marginals(chain), p = pair_marg
     c
 end
 
-function StatsBase.entropy(chain::ChainModel; logZ = lognormalization(chain), en = energy(chain))
+function StatsBase.entropy(chain::ChainModel; 
+    logZ = lognormalization(chain), en = avg_energy(chain))
+
     return logZ + en
 end
 
 function StatsBase.kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_marginals(p))
-    en = energy(p; nmarg)
+    en = avg_energy(p; nmarg)
     plogp = - entropy(p; en)
     plogq = 0.0
     for i in eachindex(nmarg) 

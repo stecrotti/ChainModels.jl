@@ -17,6 +17,14 @@ struct KChainModel{T<:AbstractVector{<:AbstractArray{<:Real}}} <: DiscreteMultiv
     end
 end
 
+function rand_k_chain_model(rng::AbstractRNG, K::Integer, L::Integer, q::Integer)
+    f = [randn(rng, fill(q, K)...) for _ in 1:(L-1)]
+    return KChainModel(f)
+end
+function rand_k_chain_model(K::Integer, L::Integer, q::Integer)
+    return rand_k_chain_model(Random.default_rng(), K, L, q)
+end
+
 getK(::KChainModel{<:AbstractVector{<:AbstractArray{<:Real,K}}}) where {K} = K
 
 Base.length(chain::KChainModel) = length(chain.f) + getK(chain) - 1
@@ -86,7 +94,7 @@ function LinearAlgebra.normalize(chain::KChainModel;
     return normalize!(deepcopy(chain); logZ)
 end
 
-function Km1_neighbor_marginals(chain::KChainModel;
+function _Km1_neighbor_marginals(chain::KChainModel;
     l = accumulate_left(chain), r = accumulate_right(chain))
 
     K = getK(chain)
@@ -113,24 +121,26 @@ function neighbor_marginals(chain::KChainModel;
     end
 end
 
-function nbody_marginals(n::Integer, chain::KChainModel; kw...)
-end
-
-function marginals(chain::KChainModel; kw...)
-    km1_marg = Km1_neighbor_marginals(chain; kw...)
-
+function nbody_neighbor_marginals(n::Integer, chain::KChainModel; kw...)
     K = getK(chain)
+    0 ≤ n ≤ K || throw(ArgumentError("Expected n to be between 0 and K=$K, got $n"))
+    n == K && return neighbor_marginals(chain; kw...)
+    km1_marg = _Km1_neighbor_marginals(chain; kw...)
+    n == K-1 && return km1_marg
     L = length(chain)
-
-    return map(1:length(chain)) do i 
-        a = 1 + max(0, i - (L-K+2))
-        j = min(i,lastindex(km1_marg))
-        dims = (1:ndims(km1_marg[j]))[Not(a)]
-        vec(sum(km1_marg[j]; dims))
+    return map(1:L-n+1) do i 
+        a = 1 + max(0, i - (L-n))
+        j = min(i,lastindex(km1_marg)-n+2)
+        dims = (1:ndims(km1_marg[j]))[Not(a:a+n-1)]
+        dropdims(sum(km1_marg[j]; dims); dims=tuple(dims...))
     end
 end
 
-function energy(chain::KChainModel; nmarg = neighbor_marginals(chain))
+function marginals(chain::KChainModel; kw...)
+    return nbody_neighbor_marginals(1, chain; kw...)
+end
+
+function avg_energy(chain::KChainModel; nmarg = neighbor_marginals(chain))
     en = 0.0
     for (fᵢ,pᵢ) in zip(chain.f, nmarg)
         en -= expectation((x...)->fᵢ[x...], pᵢ)

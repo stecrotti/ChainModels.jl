@@ -18,7 +18,7 @@ kr = k_accumulate_right(f)
 @test r ≈ kr
 
 m_old = marginals(ChainModel(f))
-m_new = Km1_neighbor_marginals(KChainModel(f))
+m_new = nbody_neighbor_marginals(K-1, KChainModel(f))
 @test m_old ≈ m_new
 @test m_old ≈ marginals(KChainModel(f))
 
@@ -26,7 +26,7 @@ nm_old = neighbor_marginals(ChainModel(f))
 nm_new = neighbor_marginals(KChainModel(f))
 @test nm_old ≈ nm_new
 
-@test energy(ChainModel(f)) ≈ energy(KChainModel(f))
+@test avg_energy(ChainModel(f)) ≈ avg_energy(KChainModel(f))
 
 
 K = 3
@@ -45,5 +45,12 @@ end
 
 
 K = 1
+f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
+chain = KChainModel(f)
+marg = marginals(chain)
+@test marg ≈ [(a = exp.(fi); a ./= sum(a)) for fi in chain.f]
+
+K = 4
+n = 2
 f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
 chain = KChainModel(f)
