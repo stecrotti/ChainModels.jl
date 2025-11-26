@@ -156,7 +156,7 @@ function StatsBase.kldivergence(p::ChainModel, q::ChainModel; nmarg = neighbor_m
     plogp = - entropy(p; en)
     plogq = 0.0
     for i in eachindex(nmarg) 
-        plogq += expectation((xᵢ,xᵢ₊₁)->q.f[i][xᵢ,xᵢ₊₁], nmarg[i])
+        plogq += expectation((x...)->q.f[i][x...], nmarg[i])
     end
     plogq -= lognormalization(q)
     return plogp - plogq
@@ -166,7 +166,7 @@ function StatsBase.kldivergence(p::KChainModel, q::KChainModel; nmarg = neighbor
     plogp = - entropy(p; en)
     plogq = 0.0
     for i in eachindex(nmarg) 
-        plogq += expectation((xᵢ,xᵢ₊₁)->q.f[i][xᵢ,xᵢ₊₁], nmarg[i])
+        plogq += expectation((x...)->q.f[i][x...], nmarg[i])
     end
     plogq -= lognormalization(q)
     return plogp - plogq
@@ -182,7 +182,7 @@ function StatsBase.loglikelihood(chain::ChainModel{T}, x::AbstractVector{<:Abstr
     end
     ll
 end
-function StatsBase.loglikelihood(chain::KChainModel{T}, x::AbstractVector{<:AbstractVector{<:Integer}}; 
+function StatsBase.loglikelihood(chain::KChainModel{<:AbstractVector{<:AbstractArray{T}}}, x::AbstractVector{<:AbstractVector{<:Integer}}; 
         logZ = lognormalization(chain)) where T
     L = length(chain)
     all(length(xi) == L for xi in x) || throw(DimensionMismatch("inconsistent array dimensions"))
