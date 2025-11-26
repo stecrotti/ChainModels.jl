@@ -1,8 +1,3 @@
-Ks = 1:4
-qs = (2,3,4,5,6)
-
-L = length(qs)
-
 for K in Ks
     @testset "K=$K" begin
         f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]

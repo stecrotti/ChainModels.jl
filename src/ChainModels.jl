@@ -9,25 +9,19 @@ using Distributions: Distributions, DiscreteMultivariateDistribution,
 using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence, loglikelihood
 using InvertedIndices: Not
 
-export ChainModel, rand_chain_model, nstates,
+export KChainModel, ChainModel, 
+        rand_k_chain_model, rand_chain_model, nstates, getK,
         accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
         accumulate_middle, accumulate_middle!, logevaluate, evaluate, lognormalization,
         normalization, normalize!, normalize,
-        marginals, neighbor_marginals, pair_marginals, avg_energy
+        marginals, nbody_neighbor_marginals, neighbor_marginals, pair_marginals, avg_energy
         # overrides from Distributions, StatsBase
         rand, mean, var, cov, entropy,
         kldivergence, loglikelihood, logpdf, pdf
         
 
 include("accumulators.jl")
-include("chainmodel.jl")
 include("k_chainmodel.jl")
 include("overrides.jl")
-
-export KChainModel, rand_kchain_model, k_accumulate_left, k_accumulate_left!,
-    k_accumulate_right, k_accumulate_right!, Km1_neighbor_marginals,
-    rand_k_chain_model,
-
-    nbody_neighbor_marginals, getK
 
 end

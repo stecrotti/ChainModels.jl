@@ -7,26 +7,17 @@ using StatsBase
 using Random
 using LogExpFunctions
 
-rng = MersenneTwister(0)
-qs = (4,3,1,2)
-f = [randn(rng, qs[i-1],qs[i]) for i in Iterators.drop(eachindex(qs),1)]
-chain = ChainModel(f)
-L = length(chain)
 
-@testset "Accumulators" begin
-    include("accumulators.jl")
-end
+Ks = 1:4
+qs = (2,3,4,5,6)
+L = length(qs)
 
-@testset "ChainModel" begin
-    include("chainmodel.jl")
+@testset "KChainModel" begin
+    include("k_chainmodel.jl")
 end
 
 @testset "Overrides" begin
     include("overrides.jl")
-end
-
-@testset "KChainModel" begin
-    include("k_chainmodel.jl")
 end
 
 nothing

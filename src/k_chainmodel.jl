@@ -17,7 +17,23 @@ struct KChainModel{T<:AbstractVector{<:AbstractArray{<:Real}}} <: DiscreteMultiv
     end
 end
 
-# const KChain{K} = KChainModel{<:AbstractVector{<:AbstractArray{T,K}}} where T
+const ChainModel{T} = KChainModel{<:AbstractVector{<:AbstractArray{T,2}}}
+function ChainModel(f::AbstractVector{<:AbstractArray{<:Real,2}})
+    return KChainModel(f)
+end
+function ChainModel(f::AbstractVector{<:AbstractArray{<:Real,2}},
+    h::AbstractVector{<:AbstractVector{<:Real}})
+    return KChainModel(f, h)
+end
+
+const FactorizedModel{T} = KChainModel{<:AbstractVector{<:AbstractArray{T,1}}}
+function FactorizedModel(f::AbstractVector{<:AbstractArray{<:Real,1}})
+    return KChainModel(f)
+end
+function FactorizedModel(f::AbstractVector{<:AbstractArray{<:Real,1}},
+    h::AbstractVector{<:AbstractVector{<:Real}})
+    return KChainModel(f, h)
+end
 
 function KChainModel(f::AbstractVector{<:AbstractArray{<:Real,K}}, 
         h::AbstractVector{<:AbstractVector{<:Real}}) where {K}
@@ -48,14 +64,20 @@ function rand_k_chain_model(K::Integer, L::Integer, q::Integer)
     return rand_k_chain_model(Random.default_rng(), K, L, q)
 end
 
+rand_chain_model(rng, L, q) = rand_k_chain_model(rng, 2, L, q)
+rand_chain_model(L, q) = rand_k_chain_model(2, L, q)
+
+rand_factorized_model(rng, L, q) = rand_k_chain_model(rng, 1, L, q)
+rand_factorized_model(L, q) = rand_k_chain_model(1, L, q)
+
 nstates(chain::KChainModel) = Tuple(nstates(chain.f))
 
 getK(::KChainModel{<:AbstractVector{<:AbstractArray{<:Real,K}}}) where {K} = K
 
 Base.length(chain::KChainModel) = length(chain.f) + getK(chain) - 1
 
-accumulate_left(chain::KChainModel) = k_accumulate_left(chain.f)
-accumulate_right(chain::KChainModel) = k_accumulate_right(chain.f)
+accumulate_left(chain::KChainModel) = accumulate_left(chain.f)
+accumulate_right(chain::KChainModel) = accumulate_right(chain.f)
 accumulate_middle(chain::KChainModel) = accumulate_middle(chain.f)
 
 
@@ -125,7 +147,7 @@ function LinearAlgebra.normalize(chain::KChainModel;
     return normalize!(deepcopy(chain); logZ)
 end
 
-function _Km1_neighbor_marginals(chain::KChainModel;
+function _km1_neighbor_marginals(chain::KChainModel;
     l = accumulate_left(chain), r = accumulate_right(chain))
 
     K = getK(chain)
@@ -156,7 +178,7 @@ function nbody_neighbor_marginals(::Val{n},
 
     0 ≤ n ≤ K || throw(ArgumentError("Expected n to be between 0 and K=$K, got $n"))
     n == K && return neighbor_marginals(chain; kw...)
-    km1_marg = _Km1_neighbor_marginals(chain; kw...)
+    km1_marg = _km1_neighbor_marginals(chain; kw...)
     n == K-1 && return km1_marg
     L = length(chain)
     return map(1:L-n+1) do i 
@@ -171,7 +193,7 @@ function marginals(chain::KChainModel; kw...)
     return nbody_neighbor_marginals(Val(1), chain; kw...)
 end
 
-function pair_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,2}}};
+function pair_marginals(chain::ChainModel{T};
         l = accumulate_left(chain), r = accumulate_right(chain), 
         m = accumulate_middle(chain)) where T
     L = length(chain)

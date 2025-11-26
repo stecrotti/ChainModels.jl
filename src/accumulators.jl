@@ -10,61 +10,61 @@ function nstates(f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
 end
 
 
-"""
-    accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
+# """
+#     accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
 
-In-place version of [`accumulate_left`](@ref)
-"""
-function accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
-    l[0] .= 0
-    for i in eachindex(f)
-        for xᵢ₊₁ in eachindex(l[i])
-            l[i][xᵢ₊₁] = logsumexp(l[i-1][xᵢ] + f[i][xᵢ,xᵢ₊₁] for xᵢ in eachindex(l[i-1]))
-        end
-    end
-    l
-end
+# In-place version of [`accumulate_left`](@ref)
+# """
+# function accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
+#     l[0] .= 0
+#     for i in eachindex(f)
+#         for xᵢ₊₁ in eachindex(l[i])
+#             l[i][xᵢ₊₁] = logsumexp(l[i-1][xᵢ] + f[i][xᵢ,xᵢ₊₁] for xᵢ in eachindex(l[i-1]))
+#         end
+#     end
+#     l
+# end
 
-@doc raw"""
-    accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
+# @doc raw"""
+#     accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
 
-Compute the left partial normalization for the matrices in `f`
-```math
-l_{i}(x_{i+1}) = \log\sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}
-```
-"""
-function accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
-    l = OffsetArray([zeros(T, 1, q) for q in nstates(f)], -1)
-    accumulate_left!(l, f)
-end
+# Compute the left partial normalization for the matrices in `f`
+# ```math
+# l_{i}(x_{i+1}) = \log\sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}
+# ```
+# """
+# function accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
+#     l = OffsetArray([zeros(T, 1, q) for q in nstates(f)], -1)
+#     accumulate_left!(l, f)
+# end
 
-"""
-    accumulate_right!(l, f::Vector{Matrix{T}}) where {T<:Real}
+# """
+#     accumulate_right!(l, f::Vector{Matrix{T}}) where {T<:Real}
 
-In-place version of [`accumulate_right`](@ref)
-"""
-function accumulate_right!(r, f::Vector{Matrix{T}}) where {T<:Real}
-    r[end] .= 0
-    for i in reverse(eachindex(f))
-        for xᵢ in eachindex(r[i+1])
-            r[i+1][xᵢ] = logsumexp(f[i][xᵢ,xᵢ₊₁] + r[i+2][xᵢ₊₁] for xᵢ₊₁ in eachindex(r[i+2]))
-        end
-    end
-    r
-end
+# In-place version of [`accumulate_right`](@ref)
+# """
+# function accumulate_right!(r, f::Vector{Matrix{T}}) where {T<:Real}
+#     r[end] .= 0
+#     for i in reverse(eachindex(f))
+#         for xᵢ in eachindex(r[i+1])
+#             r[i+1][xᵢ] = logsumexp(f[i][xᵢ,xᵢ₊₁] + r[i+2][xᵢ₊₁] for xᵢ₊₁ in eachindex(r[i+2]))
+#         end
+#     end
+#     r
+# end
 
-@doc raw"""
-    accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
+# @doc raw"""
+#     accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
 
-Compute the right partial normalization for the matrices in `f`
-```math
-r_{i}(x_{i-1}) = \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
-```
-"""
-function accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
-    r = OffsetArray([zeros(T, q, 1) for q in nstates(f)], +1)
-    accumulate_right!(r, f)
-end
+# Compute the right partial normalization for the matrices in `f`
+# ```math
+# r_{i}(x_{i-1}) = \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
+# ```
+# """
+# function accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
+#     r = OffsetArray([zeros(T, q, 1) for q in nstates(f)], +1)
+#     accumulate_right!(r, f)
+# end
 
 """
     accumulate_middle!(l, f::Vector{Matrix{T}}) where {T<:Real}
@@ -103,11 +103,11 @@ end
 
 
 """
-    k_accumulate_left!(l, f::AbstractVector{<:AbstractArray{<:Real,K}}) where {K}
+    accumulate_left!(l, f::AbstractVector{<:AbstractArray{<:Real,K}}) where {K}
 
-In-place version of [`k_accumulate_left`](@ref)
+In-place version of [`accumulate_left`](@ref)
 """
-function k_accumulate_left!(l, f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
+function accumulate_left!(l, f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
     l[0] .= 0
     for i in eachindex(f)
         for s in Iterators.product(axes(l[i])...)
@@ -118,7 +118,7 @@ function k_accumulate_left!(l, f::AbstractVector{<:AbstractArray{T,K}}) where {T
 end
 
 # special case for K=1
-function k_accumulate_left!(l, ::AbstractVector{<:AbstractArray{T,1}}) where {T<:Real}
+function accumulate_left!(l, ::AbstractVector{<:AbstractArray{T,1}}) where {T<:Real}
     for li in l
         li .= 0
     end
@@ -126,25 +126,25 @@ function k_accumulate_left!(l, ::AbstractVector{<:AbstractArray{T,1}}) where {T<
 end
 
 @doc raw"""
-    k_accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
+    accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
 
 Compute the left partial normalization for the matrices in `f`
 ```math
 ```
 """
-function k_accumulate_left(f::AbstractVector{<:AbstractArray{T,K}}) where {T,K}
+function accumulate_left(f::AbstractVector{<:AbstractArray{T,K}}) where {T,K}
     l_ = [zeros(T, size(f[i+1])[1:end-1]...) for i in eachindex(f).-1]
     push!(l_, zeros(T, size(f[end])[2:end]...))
     l = OffsetArray(l_, -1)
-    return k_accumulate_left!(l, f)
+    return accumulate_left!(l, f)
 end
 
 """
-    k_accumulate_right!(l, f::AbstractVector{<:AbstractArray{<:Real,K}}) where {K}
+    accumulate_right!(l, f::AbstractVector{<:AbstractArray{<:Real,K}}) where {K}
 
-In-place version of [`k_accumulate_right`](@ref)
+In-place version of [`accumulate_right`](@ref)
 """
-function k_accumulate_right!(r, f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
+function accumulate_right!(r, f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
     r[end] .= 0
     for i in reverse(eachindex(f))
         for s in Iterators.product(axes(r[i+K-1])...)
@@ -154,7 +154,7 @@ function k_accumulate_right!(r, f::AbstractVector{<:AbstractArray{T,K}}) where {
     return r
 end
 # special case for K=1
-function k_accumulate_right!(r, ::AbstractVector{<:AbstractArray{T,1}}) where {T<:Real}
+function accumulate_right!(r, ::AbstractVector{<:AbstractArray{T,1}}) where {T<:Real}
     for ri in r
         ri .= 0
     end
@@ -162,15 +162,15 @@ function k_accumulate_right!(r, ::AbstractVector{<:AbstractArray{T,1}}) where {T
 end
 
 @doc raw"""
-    k_accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
+    accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
 
 Compute the right partial normalization for the matrices in `f`
 ```math
 ```
 """
-function k_accumulate_right(f::AbstractVector{<:AbstractArray{T,K}}) where {T,K}
+function accumulate_right(f::AbstractVector{<:AbstractArray{T,K}}) where {T,K}
     r_ = [zeros(T, size(f[i+1])[1:end-1]...) for i in eachindex(f).-1]
     push!(r_, zeros(T, size(f[end])[2:end]...))
     r = OffsetArray(r_, K-1)
-    return k_accumulate_right!(r, f)
+    return accumulate_right!(r, f)
 end
