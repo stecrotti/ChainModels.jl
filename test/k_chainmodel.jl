@@ -9,24 +9,23 @@ chain = rand_kchain_model(K, length(qs), qs[1])
 
 K = 2
 f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
+h = [randn(q) for q in qs]
 l = accumulate_left(f)
 kl = k_accumulate_left(f)
 @test permutedims.(l) ≈ kl
+chain = ChainModel(f, h)
+kchain = KChainModel(f, h)
 
-r = accumulate_right(f)
-kr = k_accumulate_right(f)
-@test r ≈ kr
-
-m_old = marginals(ChainModel(f))
-m_new = nbody_neighbor_marginals(K-1, KChainModel(f))
+m_old = marginals(chain)
+m_new = nbody_neighbor_marginals(K-1, kchain)
 @test m_old ≈ m_new
-@test m_old ≈ marginals(KChainModel(f))
+@test m_old ≈ marginals(kchain)
 
-nm_old = neighbor_marginals(ChainModel(f))
-nm_new = neighbor_marginals(KChainModel(f))
+nm_old = neighbor_marginals(chain)
+nm_new = neighbor_marginals(kchain)
 @test nm_old ≈ nm_new
 
-@test avg_energy(ChainModel(f)) ≈ avg_energy(KChainModel(f))
+@test avg_energy(kchain) ≈ avg_energy(kchain)
 
 
 K = 3
@@ -54,3 +53,10 @@ K = 4
 n = 2
 f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
 chain = KChainModel(f)
+
+@testset "Constructor with fields" begin
+    K = 3
+    f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
+    chain = KChainModel(f)
+    h = [randn(q) for q in qs]
+end

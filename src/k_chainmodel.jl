@@ -17,6 +17,27 @@ struct KChainModel{T<:AbstractVector{<:AbstractArray{<:Real}}} <: DiscreteMultiv
     end
 end
 
+function KChainModel(f::AbstractVector{<:AbstractArray{<:Real,K}}, 
+        h::AbstractVector{<:AbstractVector{<:Real}}) where {K}
+    
+    Lf = length(f) + K - 1
+    L = length(h)
+    L == Lf || throw(ArgumentError("Incompatible lengths, got $Lf and $L"))
+    for i in eachindex(f)
+        collect(size(f[i])) == length.(h[i:i+K-1]) || throw(ArgumentError("Inconsistency in sizes for f and h"))
+    end
+    fnew = deepcopy(f)
+    for i in eachindex(h)
+        a = max(1, i-L+K)
+        j = min(i,lastindex(fnew))
+        for xi in eachindex(h[i])
+            fj_slice = selectdim(fnew[j], a, xi)
+            fj_slice .+= h[i][xi]
+        end
+    end
+    return KChainModel(fnew)
+end
+
 function rand_k_chain_model(rng::AbstractRNG, K::Integer, L::Integer, q::Integer)
     f = [randn(rng, fill(q, K)...) for _ in 1:(L-1)]
     return KChainModel(f)
@@ -129,7 +150,7 @@ function nbody_neighbor_marginals(n::Integer, chain::KChainModel; kw...)
     n == K-1 && return km1_marg
     L = length(chain)
     return map(1:L-n+1) do i 
-        a = 1 + max(0, i - (L-n))
+        a = max(1, i-L+n+1)
         j = min(i,lastindex(km1_marg)-n+2)
         dims = (1:ndims(km1_marg[j]))[Not(a:a+n-1)]
         dropdims(sum(km1_marg[j]; dims); dims=tuple(dims...))
