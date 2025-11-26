@@ -66,6 +66,6 @@ end
 
 @testset "Average Energy" begin
     E = @inferred avg_energy(chain)
-    E_exhaust = sum(-logevaluate(chain, x)*p for (x,p) in pairs(P))
+    E_exhaust = sum(-logevaluate(chain, Tuple(x))*p for (x,p) in pairs(P))
     @test E ≈ E_exhaust
 end

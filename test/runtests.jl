@@ -20,4 +20,8 @@ end
     include("overrides.jl")
 end
 
+@testset "ChainModel" begin
+    include("chainmodel.jl")
+end
+
 nothing

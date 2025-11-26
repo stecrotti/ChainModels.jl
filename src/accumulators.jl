@@ -4,9 +4,9 @@
 Returns an iterator with the number of values each variable can take.
 """
 function nstates(f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
-    it1 = (size(fi, 1) for fi in f) 
-    it2 = Iterators.drop(size(f[end]), 1)
-    return Iterators.flatten((it1, it2))
+    it1 = [size(fi, 1) for fi in f]
+    it2 = [size(f[end])[begin+1:end]...]
+    return vcat(it1, it2)
 end
 
 
