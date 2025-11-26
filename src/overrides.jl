@@ -50,9 +50,11 @@ function Distributions._logpdf(chain::ChainModel, x; logZ = lognormalization(cha
     return logevaluate(chain, x) - logZ
 end
 
+expectation(f, p::AbstractArray{<:Real}) = sum(f(x...) * p[x...] for x in Iterators.product(axes(p)...))
 expectation(f, p::Matrix{<:Real}) = sum(f(xi,xj) * p[xi, xj] for xi in axes(p,1), xj in axes(p,2))
 expectation(f, p::Vector{<:Real}) = sum(f(xi) * p[xi] for xi in eachindex(p))
 expectation(p) = expectation(identity, p)
+
 
 function StatsBase.mean(chain::ChainModel; p = marginals(chain))
     return [expectation(pᵢ) for pᵢ in p]

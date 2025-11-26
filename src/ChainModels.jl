@@ -7,6 +7,7 @@ using Random: Random, AbstractRNG, rand
 using Distributions: Distributions, DiscreteMultivariateDistribution, 
     Sampleable, Multivariate, Discrete, logpdf, pdf
 using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence, loglikelihood
+using InvertedIndices: Not
 
 export ChainModel, rand_chain_model, nstates,
         accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
@@ -24,6 +25,6 @@ include("overrides.jl")
 include("k_chainmodel.jl")
 
 export KChainModel, rand_kchain_model, k_accumulate_left, k_accumulate_left!,
-    k_accumulate_right, k_accumulate_right!
+    k_accumulate_right, k_accumulate_right!, Km1_neighbor_marginals
 
 end
