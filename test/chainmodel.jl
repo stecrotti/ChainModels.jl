@@ -1,3 +1,6 @@
+f = [randn(qs[i:i+1]...) for i in 1:length(qs)-1]
+chain = ChainModel(f)
+
 @testset "broadcastable" begin
     X = collect.(eachcol(rand(chain, 10)))
     @test logpdf.(chain, X) == logpdf.((chain,), X)
