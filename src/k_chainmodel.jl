@@ -70,7 +70,7 @@ rand_chain_model(L, q) = rand_k_chain_model(2, L, q)
 rand_factorized_model(rng, L, q) = rand_k_chain_model(rng, 1, L, q)
 rand_factorized_model(L, q) = rand_k_chain_model(1, L, q)
 
-nstates(chain::KChainModel) = Tuple(nstates(chain.f))
+nstates(chain::KChainModel) = nstates(chain.f)
 
 getK(::KChainModel{<:AbstractVector{<:AbstractArray{<:Real,K}}}) where {K} = K
 
@@ -197,7 +197,8 @@ function pair_marginals(chain::ChainModel{T};
         l = accumulate_left(chain), r = accumulate_right(chain), 
         m = accumulate_middle(chain)) where T
     L = length(chain)
-    p = [zeros(T, q1, q2) for q1 in nstates(chain), q2 in nstates(chain)]
+    qs = nstates(chain)
+    p = [zeros(T, q1, q2) for q1 in qs, q2 in qs]
     for i in 1:L-1
         for j in i+1:L
             for xᵢ in axes(p[i,j], 1)
