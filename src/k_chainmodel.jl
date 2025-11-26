@@ -41,7 +41,7 @@ function KChainModel(f::AbstractVector{<:AbstractArray{<:Real,K}},
 end
 
 function rand_k_chain_model(rng::AbstractRNG, K::Integer, L::Integer, q::Integer)
-    f = [randn(rng, fill(q, K)...) for _ in 1:(L-1)]
+    f = [randn(rng, fill(q, K)...) for _ in 1:(L-K+1)]
     return KChainModel(f)
 end
 function rand_k_chain_model(K::Integer, L::Integer, q::Integer)
@@ -138,10 +138,9 @@ function _Km1_neighbor_marginals(chain::KChainModel;
     end
 end
 
-function neighbor_marginals(chain::KChainModel;
-    l = accumulate_left(chain), r = accumulate_right(chain))
+function neighbor_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,K}}};
+    l = accumulate_left(chain), r = accumulate_right(chain)) where {T,K}
 
-    K = getK(chain)
     L = length(chain)
 
     return map(1:L-K+1) do i
@@ -149,29 +148,30 @@ function neighbor_marginals(chain::KChainModel;
             for x in Iterators.product(axes(chain.f[i])...)]
         pᵢ .-= logsumexp(pᵢ)
         pᵢ .= exp.(pᵢ)
-    end
+    end::Vector{Array{T,K}}
 end
 
-function nbody_neighbor_marginals(n::Integer, chain::KChainModel; kw...)
-    K = getK(chain)
+function nbody_neighbor_marginals(::Val{n}, 
+    chain::KChainModel{<:AbstractVector{<:AbstractArray{T,K}}}; kw...) where {n,T,K}
+
     0 ≤ n ≤ K || throw(ArgumentError("Expected n to be between 0 and K=$K, got $n"))
     n == K && return neighbor_marginals(chain; kw...)
     km1_marg = _Km1_neighbor_marginals(chain; kw...)
     n == K-1 && return km1_marg
     L = length(chain)
     return map(1:L-n+1) do i 
-        a = max(1, i-L+n+1)
-        j = min(i,lastindex(km1_marg)-n+2)
+        a = max(1, i-L+K-1)
+        j = min(i, lastindex(km1_marg)-n+1)
         dims = (1:ndims(km1_marg[j]))[Not(a:a+n-1)]
         dropdims(sum(km1_marg[j]; dims); dims=tuple(dims...))
-    end
+    end::Vector{Array{T,n}}
 end
 
 function marginals(chain::KChainModel; kw...)
-    return nbody_neighbor_marginals(1, chain; kw...)
+    return nbody_neighbor_marginals(Val(1), chain; kw...)
 end
 
-function pair_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,2}}} ;
+function pair_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,2}}};
         l = accumulate_left(chain), r = accumulate_right(chain), 
         m = accumulate_middle(chain)) where T
     L = length(chain)

@@ -21,11 +21,13 @@ export ChainModel, rand_chain_model, nstates,
 
 include("accumulators.jl")
 include("chainmodel.jl")
-include("overrides.jl")
 include("k_chainmodel.jl")
+include("overrides.jl")
 
 export KChainModel, rand_kchain_model, k_accumulate_left, k_accumulate_left!,
     k_accumulate_right, k_accumulate_right!, Km1_neighbor_marginals,
-    nbody_neighbor_marginals
+    rand_k_chain_model,
+
+    nbody_neighbor_marginals, getK
 
 end
