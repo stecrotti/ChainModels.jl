@@ -1,5 +1,10 @@
 # ChainModels
 
+[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://stecrotti.github.io/ChainModels.jl/dev)
+[![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://stecrotti.github.io/ChainModels.jl/stable)
+[![Build Status](https://github.com/stecrotti/ChainModels.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/stecrotti/ChainModels.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/stecrotti/ChainModels.jl/branch/main/graph/badge.svg?token=asaxgmF8WL)](https://codecov.io/gh/stecrotti/ChainModels.jl)
+
 This package provides utilities to deal with multivariate functions factorized over a one-dimensional chain, i.e. where each variable $x_i$ interacts only with $x_{i-1}$ and $x_{i+1}$
 ```math
 f(x_1,\ldots,x_L) = e^{f_1(x_1,x_2)} e^{f_2(x_2,x_3)} \cdots e^{f_{L-1}(x_{L-1},x_L)} = \prod_{i=1}^{L-1} e^{f_i(x_i,x_{i+1})}
