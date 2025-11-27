@@ -1,6 +1,6 @@
 name = "ChainModels"
 uuid = "63c4e67a-d9f4-4de5-9a91-57c0b98e2989"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["stecrotti <s.crotti@outlook.com>"]
 
 [deps]
