@@ -1,7 +1,7 @@
 module ChainModels
 
 using LogExpFunctions: logsumexp
-using OffsetArrays: OffsetArray, OffsetVector
+using OffsetArrays: OffsetArray
 using LinearAlgebra: LinearAlgebra, normalize, normalize!
 using Random: Random, AbstractRNG, rand
 using Distributions: Distributions, DiscreteMultivariateDistribution, 
