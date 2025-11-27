@@ -3,6 +3,8 @@ for K in Ks
         f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
         chain = KChainModel(f)
 
+        
+
         X = [[rand(1:q) for q in qs] for _ in 1:10]
 
         @testset "broadcastable" begin
@@ -72,6 +74,13 @@ for K in Ks
             @test E ≈ E_exhaust
         end
     end
+end
+
+@testset "Fully Factorized" begin
+    chain = rand_factorized_model(L, 5)
+    marg = marginals(chain)
+    fields = [(a = exp.(fi); a ./= sum(a)) for fi in chain.f]
+    @test fields ≈ marg
 end
 
 
