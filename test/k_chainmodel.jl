@@ -78,6 +78,7 @@ end
 
 @testset "Fully Factorized" begin
     chain = rand_factorized_model(L, 5)
+    @test typeof(chain) == typeof(rand_k_chain_model(1, L, 5))
     marg = marginals(chain)
     fields = [(a = exp.(fi); a ./= sum(a)) for fi in chain.f]
     @test fields ≈ marg
