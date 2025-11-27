@@ -3,7 +3,7 @@ for K in Ks
         f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
         chain = KChainModel(f)
 
-        
+
 
         X = [[rand(1:q) for q in qs] for _ in 1:10]
 
@@ -81,6 +81,9 @@ end
     marg = marginals(chain)
     fields = [(a = exp.(fi); a ./= sum(a)) for fi in chain.f]
     @test fields ≈ marg
+    @test FactorizedModel(chain.f) == chain
+    h = [zeros(5) for _ in 1:L]
+    @test FactorizedModel(chain.f, h) == chain
 end
 
 
