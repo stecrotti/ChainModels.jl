@@ -65,10 +65,10 @@ function rand_k_chain_model(K::Integer, L::Integer, q::Integer)
 end
 
 rand_chain_model(rng, L, q) = rand_k_chain_model(rng, 2, L, q)
-rand_chain_model(L, q) = rand_k_chain_model(2, L, q)
+rand_chain_model(L, q) = rand_chain_model(Random.default_rng(), L, q)
 
 rand_factorized_model(rng, L, q) = rand_k_chain_model(rng, 1, L, q)
-rand_factorized_model(L, q) = rand_k_chain_model(1, L, q)
+rand_factorized_model(L, q) = rand_factorized_model(Random.default_rng(), L, q)
 
 nstates(chain::KChainModel) = nstates(chain.f)
 
