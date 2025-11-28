@@ -9,63 +9,6 @@ function nstates(f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
     return vcat(it1, it2)
 end
 
-
-# """
-#     accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
-
-# In-place version of [`accumulate_left`](@ref)
-# """
-# function accumulate_left!(l, f::Vector{Matrix{T}}) where {T<:Real}
-#     l[0] .= 0
-#     for i in eachindex(f)
-#         for xᵢ₊₁ in eachindex(l[i])
-#             l[i][xᵢ₊₁] = logsumexp(l[i-1][xᵢ] + f[i][xᵢ,xᵢ₊₁] for xᵢ in eachindex(l[i-1]))
-#         end
-#     end
-#     l
-# end
-
-# @doc raw"""
-#     accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
-
-# Compute the left partial normalization for the matrices in `f`
-# ```math
-# l_{i}(x_{i+1}) = \log\sum\limits_{x_1,\ldots,x_i}\prod\limits_{j=1}^i e^{f_j(x_j,x_{j+1})}
-# ```
-# """
-# function accumulate_left(f::Vector{Matrix{T}}) where {T<:Real}
-#     l = OffsetArray([zeros(T, 1, q) for q in nstates(f)], -1)
-#     accumulate_left!(l, f)
-# end
-
-# """
-#     accumulate_right!(l, f::Vector{Matrix{T}}) where {T<:Real}
-
-# In-place version of [`accumulate_right`](@ref)
-# """
-# function accumulate_right!(r, f::Vector{Matrix{T}}) where {T<:Real}
-#     r[end] .= 0
-#     for i in reverse(eachindex(f))
-#         for xᵢ in eachindex(r[i+1])
-#             r[i+1][xᵢ] = logsumexp(f[i][xᵢ,xᵢ₊₁] + r[i+2][xᵢ₊₁] for xᵢ₊₁ in eachindex(r[i+2]))
-#         end
-#     end
-#     r
-# end
-
-# @doc raw"""
-#     accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
-
-# Compute the right partial normalization for the matrices in `f`
-# ```math
-# r_{i}(x_{i-1}) = \log\sum\limits_{x_i,\ldots,x_L}\prod\limits_{j=i-1}^L e^{f_j(x_j,x_{j+1})}
-# ```
-# """
-# function accumulate_right(f::Vector{Matrix{T}}) where {T<:Real}
-#     r = OffsetArray([zeros(T, q, 1) for q in nstates(f)], +1)
-#     accumulate_right!(r, f)
-# end
-
 """
     accumulate_middle!(l, f::Vector{Matrix{T}}) where {T<:Real}
 
@@ -110,8 +53,8 @@ In-place version of [`accumulate_left`](@ref)
 function accumulate_left!(l, f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
     l[0] .= 0
     for i in eachindex(f)
-        for s in Iterators.product(axes(l[i])...)
-            l[i][s...] = @views logsumexp(l[i-1][:,s[1:end-1]...] + f[i][:,s...])
+        @inbounds for s in CartesianIndices(l[i])
+            l[i][s] = @views logsumexp(l[i-1][:,Tuple(s)[1:end-1]...] + f[i][:,s])
         end
     end
     return l
@@ -147,8 +90,8 @@ In-place version of [`accumulate_right`](@ref)
 function accumulate_right!(r, f::AbstractVector{<:AbstractArray{T,K}}) where {T<:Real,K}
     r[end] .= 0
     for i in reverse(eachindex(f))
-        for s in Iterators.product(axes(r[i+K-1])...)
-            r[i+K-1][s...] = @views logsumexp(f[i][s...,:] + r[i+K][s[2:end]...,:])
+        @inbounds for s in CartesianIndices(r[i+K-1])
+            r[i+K-1][s] = @views logsumexp(f[i][s,:] + r[i+K][Tuple(s)[2:end]...,:])
         end
     end
     return r

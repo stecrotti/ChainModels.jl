@@ -103,7 +103,12 @@ Base.broadcastable(chain::KChainModel) = Ref(chain)
 
 function logevaluate(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,K}}}, x) where {T,K}
     length(x) == length(chain) || throw(ArgumentError("x should be of same length as chain"))
-    return @views sum(chain.f[i][x[i:i+K-1]...] for i in eachindex(chain.f); init=zero(T))::T
+    s = zero(T)
+    @inbounds for i in eachindex(chain.f)
+        idx = ntuple(j -> x[i + j - 1], K)
+        s += chain.f[i][idx...] 
+    end
+    return s
 end
 
 """
