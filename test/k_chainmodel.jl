@@ -3,8 +3,6 @@ for K in Ks
         f = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
         chain = KChainModel(f)
 
-
-
         X = [[rand(1:q) for q in qs] for _ in 1:10]
 
         @testset "broadcastable" begin
