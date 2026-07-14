@@ -2,7 +2,7 @@ for K in Ks
     @testset "K=$K" begin
         f_teacher = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
         chain_teacher = KChainModel(f_teacher)
-        X = reduce(hcat, [[rand(1:q) for q in qs] for _ in 1:1000])
+        X = rand(chain_teacher, 10^3)
         fK, _ = ChainModels.compute_empirical_Kmarginals(X, K; qs=qs)
 
         chain = fit_k_chain(X, K)
