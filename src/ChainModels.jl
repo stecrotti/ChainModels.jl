@@ -14,14 +14,16 @@ export KChainModel, ChainModel, FactorizedModel,
         accumulate_left!, accumulate_right!, accumulate_left, accumulate_right,
         accumulate_middle, accumulate_middle!, logevaluate, evaluate, lognormalization,
         normalization, normalize!, normalize,
-        marginals, nbody_neighbor_marginals, neighbor_marginals, pair_marginals, avg_energy
+        marginals, nbody_neighbor_marginals, neighbor_marginals, pair_marginals, avg_energy,
         # overrides from Distributions, StatsBase
         rand, mean, var, cov, entropy,
-        kldivergence, loglikelihood, logpdf, pdf
+        kldivergence, loglikelihood, logpdf, pdf,
+        fit_k_chain
         
 
 include("accumulators.jl")
 include("k_chainmodel.jl")
 include("overrides.jl")
+include("inference.jl")
 
 end
