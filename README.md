@@ -31,6 +31,7 @@ For a chain of length $L$ with variables taking one of $q$ values, the following
 | Compute pair marginals $p(x_i,x_j)$     |  $\mathcal O (L^2q^2)$ |
 | Draw a sample from $p$     |  $\mathcal O (Lq^2)$ |
 | Compute the entropy $S[p]=-\sum_xp(x)\log p(x) $     |  $\mathcal O (Lq^2)$ |
+| Fit Maximum Likelihood parameters from $N$ samples   |      $\mathcal O (NLq^2)$       |
 
 ## Quickstart
 
