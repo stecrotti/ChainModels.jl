@@ -9,7 +9,7 @@ using LogExpFunctions
 
 
 Ks = 1:4
-qs = (2,3,4,5,6)
+qs = (2, 3, 1, 5, 6, 5, 8)
 L = length(qs)
 
 @testset "KChainModel" begin

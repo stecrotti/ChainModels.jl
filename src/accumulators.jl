@@ -76,7 +76,7 @@ Compute the left partial normalization for the matrices in `f`
 ```
 """
 function accumulate_left(f::AbstractVector{<:AbstractArray{T,K}}) where {T,K}
-    l_ = [zeros(T, size(f[i+1])[1:end-1]...) for i in eachindex(f).-1]
+    l_ = [zeros(T, size(f[i])[1:end-1]...) for i in eachindex(f)]
     push!(l_, zeros(T, size(f[end])[2:end]...))
     l = OffsetArray(l_, -1)
     return accumulate_left!(l, f)
@@ -112,7 +112,7 @@ Compute the right partial normalization for the matrices in `f`
 ```
 """
 function accumulate_right(f::AbstractVector{<:AbstractArray{T,K}}) where {T,K}
-    r_ = [zeros(T, size(f[i+1])[1:end-1]...) for i in eachindex(f).-1]
+    r_ = [zeros(T, size(f[i])[1:end-1]...) for i in eachindex(f)]
     push!(r_, zeros(T, size(f[end])[2:end]...))
     r = OffsetArray(r_, K-1)
     return accumulate_right!(r, f)

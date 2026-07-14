@@ -38,8 +38,7 @@ function _onesample!(rng::AbstractRNG, s::KChainSampler, x::AbstractVector{<:Int
         x[begin+i-1] = cartind[x_linearind][i]
     end
     for i in Iterators.drop(eachindex(x), K-1)
-        xs = x[i-K+1:i-1]
-        logp = chain.f[i-K+1][xs...,:] .+ r[i+1][xs...]
+        logp = chain.f[i-K+1][x[i-K+1:i-1]..., :] .+ r[i+1][x[i-K+2:i-1]...,:] .- r[i][x[i-K+1:i-1]...]
         logz = logsumexp(logp)
         x[i] = _sample_noalloc(rng, exp(logpx - logz) for logpx in logp)
     end
