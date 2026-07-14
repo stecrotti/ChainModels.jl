@@ -46,8 +46,8 @@ function compute_corrections(fK, fKm1, K)
     return g
 end
 
-function Distributions.fit_mle(::Type{KChainModel}, K::Integer, X; 
-    qs=tuple(maximum(X, dims=2)...), eps=1e-10)
+function Distributions.fit_mle(::Type{KChainModel}, K::Integer, X::AbstractMatrix{<:Integer}; 
+    qs=tuple(maximum(X, dims=2)...))
 
     fK, fKm1 = compute_empirical_Kmarginals(X, K; qs=qs)
     g = compute_corrections(fK, fKm1, K)
@@ -58,4 +58,10 @@ function Distributions.fit_mle(::Type{KChainModel}, K::Integer, X;
     end
 
     return KChainModel(f)
+end
+
+function Distributions.fit_mle(::Type{ChainModel}, X::AbstractMatrix{<:Integer}; 
+    qs=tuple(maximum(X, dims=2)...))
+
+    return Distributions.fit_mle(KChainModel, 2, X; qs=qs)
 end
