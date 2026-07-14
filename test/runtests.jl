@@ -24,4 +24,9 @@ end
     include("chainmodel.jl")
 end
 
+@testset "Inference" begin
+    include("inference.jl")
+end
+
+
 nothing
