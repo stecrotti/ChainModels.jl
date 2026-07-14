@@ -46,12 +46,14 @@ function compute_corrections(fK, fKm1, K)
     return g
 end
 
-function fit_k_chain(X, K::Integer; qs=tuple(maximum(X, dims=2)...))
+function Distributions.fit_mle(::Type{KChainModel}, K::Integer, X; 
+    qs=tuple(maximum(X, dims=2)...), eps=1e-10)
+
     fK, fKm1 = compute_empirical_Kmarginals(X, K; qs=qs)
     g = compute_corrections(fK, fKm1, K)
     f = map(zip(fK, g)) do (fKi, gi)
-        fi = log.(fKi) .- 0.5 * log.(gi)
-        fi[isnan.(fi)] .= 0
+        fi = log.(fKi ./ sqrt.(gi))
+        fi[isnan.(fi)] .= - Inf
         fi
     end
 
