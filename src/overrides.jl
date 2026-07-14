@@ -89,7 +89,6 @@ end
 
 function StatsBase.entropy(chain::KChainModel; 
     logZ = lognormalization(chain), en = avg_energy(chain))
-
     return logZ + en
 end
 
@@ -97,8 +96,10 @@ function StatsBase.kldivergence(p::KChainModel, q::KChainModel; nmarg = neighbor
     en = avg_energy(p; nmarg)
     plogp = - entropy(p; en)
     plogq = 0.0
+    # f = -Inf times p = 0 should give 0, so "soften" the infinite
+    softinf(x) = (x == -Inf) ? -1e10 : x
     for i in eachindex(nmarg) 
-        plogq += expectation((x...)->q.f[i][x...], nmarg[i])
+        plogq += expectation((x...)->softinf(q.f[i][x...]), nmarg[i])
     end
     plogq -= lognormalization(q)
     return plogp - plogq

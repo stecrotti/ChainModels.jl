@@ -221,8 +221,10 @@ end
 
 function avg_energy(chain::KChainModel; nmarg = neighbor_marginals(chain))
     en = 0.0
+    # f = -Inf times p = 0 should give 0, so "soften" the infinite
+    softinf(x) = (x == -Inf) ? -1e10 : x
     for (fᵢ,pᵢ) in zip(chain.f, nmarg)
-        en -= expectation((x...)->fᵢ[x...], pᵢ)
+        en -= expectation((x...)->softinf(fᵢ[x...]), pᵢ)
     end
     en
 end
