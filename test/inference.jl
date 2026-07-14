@@ -13,3 +13,18 @@ for K in Ks
         end
     end
 end
+
+@testset "ChainModel" begin
+    K = 2
+    f_teacher = [randn(qs[i:i+K-1]...) for i in 1:length(qs)-K+1]
+    chain_teacher = ChainModel(f_teacher)
+    X = rand(chain_teacher, 10^1)
+    fK, _ = ChainModels.compute_empirical_Kmarginals(X, K; qs=qs)
+
+    chain = fit_mle(ChainModel, X, qs=qs)
+    neig_marginals = neighbor_marginals(chain)
+
+    @test all(1:L-K+1) do i
+        isapprox(neig_marginals[i], fK[i], rtol=1e-8)
+    end
+end

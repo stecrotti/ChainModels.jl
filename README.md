@@ -44,11 +44,11 @@ import Pkg; Pkg.add("https://github.com/stecrotti/ChainModels.jl.git")
 Create a `ChainModel` and compute some stuff
 
 ```julia
-using ChainModels
+using ChainModels, Distributions
 
 L = 100
-q = fill(20, L)
-f = [randn(q[i], q[i+1]) for i in 1:L-1]
+qs = fill(20, L)
+f = [randn(qs[i], qs[i+1]) for i in 1:L-1]
 p = ChainModel(f)
 
 Z = normalization(p)
@@ -58,6 +58,8 @@ pairmarg = pair_marginals(p)
 S = entropy(p)
 x = rand(p, 500)
 l = loglikelihood(p, x)
+
+phat = Distributions.fit_mle(ChainModel, x)
 ```
 
 ## Examples of chain models
