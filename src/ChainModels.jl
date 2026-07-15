@@ -5,7 +5,7 @@ using OffsetArrays: OffsetArray
 using LinearAlgebra: LinearAlgebra, normalize, normalize!
 using Random: Random, AbstractRNG, rand
 using Distributions: Distributions, DiscreteMultivariateDistribution, 
-    Sampleable, Multivariate, Discrete, logpdf, pdf
+    Sampleable, Multivariate, Discrete, logpdf, pdf, fit_mle
 using StatsBase: StatsBase, mean, var, cov, entropy, kldivergence, loglikelihood
 using InvertedIndices: Not
 
@@ -18,7 +18,7 @@ export KChainModel, ChainModel, FactorizedModel,
         # overrides from Distributions, StatsBase
         rand, mean, var, cov, entropy,
         kldivergence, loglikelihood, logpdf, pdf,
-        fit_k_chain
+        fit_mle
         
 
 include("accumulators.jl")
