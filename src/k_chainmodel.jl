@@ -17,6 +17,11 @@ struct KChainModel{T<:AbstractVector{<:AbstractArray{<:Real}}} <: DiscreteMultiv
     end
 end
 
+"""
+    ChainModel{T} = KChainModel{<:AbstractVector{<:AbstractArray{T,2}}}
+
+A specialized [`KChainModel`](@ref) with K=2 nearest-neighbor interactions
+"""
 const ChainModel{T} = KChainModel{<:AbstractVector{<:AbstractArray{T,2}}}
 function ChainModel(f::AbstractVector{<:AbstractArray{<:Real,2}})
     return KChainModel(f)
@@ -26,6 +31,11 @@ function ChainModel(f::AbstractVector{<:AbstractArray{<:Real,2}},
     return KChainModel(f, h)
 end
 
+"""
+    FactorizedModel{T} = KChainModel{<:AbstractVector{<:AbstractArray{T,1}}}
+
+A specialized [`KChainModel`](@ref) with K=1 nearest-neighbor interactions, i.e. no interactions
+"""
 const FactorizedModel{T} = KChainModel{<:AbstractVector{<:AbstractArray{T,1}}}
 function FactorizedModel(f::AbstractVector{<:AbstractArray{<:Real,1}})
     return KChainModel(f)
@@ -64,9 +74,20 @@ function rand_k_chain_model(K::Integer, L::Integer, q::Integer)
     return rand_k_chain_model(Random.default_rng(), K, L, q)
 end
 
+"""
+    rand_chain_model(rng::AbstractRNG, L::Integer, q::Integer)
+
+Return a  [`ChainModel`](@ref) of length `L` and `q` states for each variable, with random entries
+"""
 rand_chain_model(rng, L, q) = rand_k_chain_model(rng, 2, L, q)
 rand_chain_model(L, q) = rand_chain_model(Random.default_rng(), L, q)
 
+
+"""
+    rand_factorized_model(rng::AbstractRNG, L::Integer, q::Integer)
+
+Return a  [`FactorizedModel`](@ref) of length `L` and `q` states for each variable, with random entries
+"""
 rand_factorized_model(rng, L, q) = rand_k_chain_model(rng, 1, L, q)
 rand_factorized_model(L, q) = rand_factorized_model(Random.default_rng(), L, q)
 
@@ -88,7 +109,7 @@ end
 """
     rand_kchain_model([rng], K::Integer, L::Integer, q::Integer)
 
-Return a  `KChainModel` of length `L` and `q` states for each variable, with random entries
+Return a  [`KChainModel`](@ref) of length `L` and `q` states for each variable, with random entries
 """
 function rand_kchain_model(rng::AbstractRNG, K::Integer, L::Integer, q::Integer)
     f = [randn(rng, fill(q, K)...) for _ in 1:(L-K+1)]
@@ -119,7 +140,7 @@ Evaluate the (possibly unnormalized) model at `x`
 evaluate(chain::KChainModel, x) = exp(logevaluate(chain, x)) 
 
 """
-    lognormalization(chain::ChainModel; l = accumulate_left(chain))
+    lognormalization(chain::KChainModel; l = accumulate_left(chain))
 
 Conceptually equivalent to `log(normalization(chain))`, less prone to numerical issues
 """
@@ -133,6 +154,11 @@ function lognormalization(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,
     return sum(logsumexp.(chain.f); init=zero(T))
 end
 
+"""
+    normalization(chain::KChainModel; l = accumulate_left(chain))
+
+Compute the normalization of the model
+"""
 function normalization(chain::KChainModel; l = accumulate_left(chain)) 
     return exp(lognormalization(chain; l))
 end
@@ -165,6 +191,17 @@ function _km1_neighbor_marginals(chain::KChainModel;
     end
 end
 
+@doc raw"""
+    neighbor_marginals(chain::KChainModel; l = accumulate_left(chain), r = accumulate_right(chain))
+
+Compute the `K`-body marginals
+```math
+\p(x_i, \ldots, x_{i+K-1})\quad\forall i
+```
+where `K` is the number of nearest-neighbors involved in the interactions.
+For a `ChainModel`, it computes the pairwise marginals $p(x_i, x_{i+1}$.
+Optionally pass pre-computed left and right partial normalizations.
+"""
 function neighbor_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{T,K}}};
     l = accumulate_left(chain), r = accumulate_right(chain)) where {T,K}
 
@@ -178,6 +215,16 @@ function neighbor_marginals(chain::KChainModel{<:AbstractVector{<:AbstractArray{
     end::Vector{Array{T,K}}
 end
 
+@doc raw"""
+    nbody_neighbor_marginals(::Val{n}, chain::KChainModel; l = accumulate_left(chain), r = accumulate_right(chain))
+
+Compute the `n`-body marginals
+```math
+\p(x_i, \ldots, x_{i+n-1})\quad\forall i
+```
+with $n\le K$.
+Optionally pass pre-computed left and right partial normalizations.
+"""
 function nbody_neighbor_marginals(::Val{n}, 
     chain::KChainModel{<:AbstractVector{<:AbstractArray{T,K}}}; kw...) where {n,T,K}
 
@@ -194,10 +241,32 @@ function nbody_neighbor_marginals(::Val{n},
     end::Vector{Array{T,n}}
 end
 
+@doc raw"""
+    marginals(chain::KChainModel; l = accumulate_left(chain), r = accumulate_right(chain))
+
+Compute single-site marginals
+```math
+\p(x_i)\quad\forall i
+```
+
+Optionally pass pre-computed left and right partial normalizations.
+"""
 function marginals(chain::KChainModel; kw...)
     return nbody_neighbor_marginals(Val(1), chain; kw...)
 end
 
+@doc raw"""
+    pair_marginals(chain::ChainModel{T};
+        l = accumulate_left(chain), r = accumulate_right(chain), 
+        m = accumulate_middle(chain)
+
+Compute pairwise marginals
+```math
+\p(x_i, x_j)\quad\forall i,j
+```
+
+Optionally pass pre-computed left, right and middle partial normalizations.
+"""
 function pair_marginals(chain::ChainModel{T};
         l = accumulate_left(chain), r = accumulate_right(chain), 
         m = accumulate_middle(chain)) where T
@@ -219,6 +288,14 @@ function pair_marginals(chain::ChainModel{T};
     p
 end
 
+@doc raw"""
+    avg_energy(chain::KChainModel; nmarg = neighbor_marginals(chain))
+
+Compute the average energy 
+```math
+E = - \sum_{x_1, \ldots, x_L} \sum_{i=1}^{L-K+1} f_i(x_i,\ldots,x_{i+K-1}) p(x_1, \ldots, x_L)
+```
+"""
 function avg_energy(chain::KChainModel; nmarg = neighbor_marginals(chain))
     en = 0.0
     # f = -Inf times p = 0 should give 0, so "soften" the infinite

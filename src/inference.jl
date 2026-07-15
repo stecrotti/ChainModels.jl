@@ -1,4 +1,9 @@
-function compute_empirical_Kmarginals(X, K::Integer; 
+"""
+    compute_empirical_Kmarginals(X::AbstractMatrix{<:Integer}, K::Integer; qs=tuple(maximum(X, dims=2)...), eps=0.0)
+
+Compute `K`- and `K-1`-body empirical frequencies from data `X` which is a matrix `L`x`N` where `L` is the chain length and `N` the number of samples.
+"""
+function compute_empirical_Kmarginals(X::AbstractMatrix{<:Integer}, K::Integer; 
     qs=tuple(maximum(X, dims=2)...), eps=0.0)
 
     L, N = size(X)
