@@ -38,7 +38,7 @@ For a chain of length $L$ with variables taking one of $q$ values, the following
 Install with
 
 ```julia
-import Pkg; Pkg.add("https://github.com/stecrotti/ChainModels.jl.git")
+import Pkg; Pkg.add("ChainModels")
 ```
 
 Create a `ChainModel` and compute some stuff
@@ -59,7 +59,7 @@ S = entropy(p)
 x = rand(p, 500)
 l = loglikelihood(p, x)
 
-phat = Distributions.fit_mle(ChainModel, x)
+p_hat = fit_mle(ChainModel, x)
 ```
 
 ## Examples of chain models
