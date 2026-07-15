@@ -1,5 +1,6 @@
 [deps]
+ChainModels = "63c4e67a-d9f4-4de5-9a91-57c0b98e2989"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 
 [compat]
-Documenter = "0.27"
+Documenter = "0.27, 1"

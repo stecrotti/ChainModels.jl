@@ -163,6 +163,11 @@ function normalization(chain::KChainModel; l = accumulate_left(chain))
     return exp(lognormalization(chain; l))
 end
 
+"""
+    LinearAlgebra.normalize!(chain::KChainModel; logZ = lognormalization(chain))
+
+Normalize the distribution such that the normalization constant is equal to 1.
+"""
 function LinearAlgebra.normalize!(chain::KChainModel; 
     logZ = lognormalization(chain))
 
@@ -196,7 +201,7 @@ end
 
 Compute the `K`-body marginals
 ```math
-\p(x_i, \ldots, x_{i+K-1})\quad\forall i
+p(x_i, \ldots, x_{i+K-1})\quad\forall i
 ```
 where `K` is the number of nearest-neighbors involved in the interactions.
 For a `ChainModel`, it computes the pairwise marginals $p(x_i, x_{i+1}$.
@@ -220,7 +225,7 @@ end
 
 Compute the `n`-body marginals
 ```math
-\p(x_i, \ldots, x_{i+n-1})\quad\forall i
+p(x_i, \ldots, x_{i+n-1})\quad\forall i
 ```
 with $n\le K$.
 Optionally pass pre-computed left and right partial normalizations.
@@ -246,7 +251,7 @@ end
 
 Compute single-site marginals
 ```math
-\p(x_i)\quad\forall i
+p(x_i)\quad\forall i
 ```
 
 Optionally pass pre-computed left and right partial normalizations.
@@ -262,7 +267,7 @@ end
 
 Compute pairwise marginals
 ```math
-\p(x_i, x_j)\quad\forall i,j
+p(x_i, x_j)\quad\forall i,j
 ```
 
 Optionally pass pre-computed left, right and middle partial normalizations.

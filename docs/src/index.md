@@ -13,7 +13,7 @@ with $Z = \sum\limits_{x_1,\ldots,x_L}\prod\limits_{i=1}^{L-1} e^{f_i(x_i,x_{i+1
 
 In other words, a probability distribution is a chain model if its [factor graph](https://en.wikipedia.org/wiki/Factor_graph) is a [simple path](https://en.wikipedia.org/wiki/Path_(graph_theory)#simple_path):
 
-![Chain Factor Graph](docs/src/assets/chain_factor_graph.png)
+![Chain Factor Graph](./assets/chain_factor_graph.png)
 
 ## Provided functionalities
 For a chain of length $L$ with variables taking one of $q$ values, the following can be performed efficiently:
