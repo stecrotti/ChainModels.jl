@@ -8,10 +8,10 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "API" => "api.md"
-    ],
-    push_preview = true
+    ]
 )
 
 deploydocs(
     repo = "github.com/stecrotti/ChainModels.jl.git",
+    push_preview = true,
 )
