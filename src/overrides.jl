@@ -32,7 +32,9 @@ function _onesample!(rng::AbstractRNG, s::KChainSampler, x::AbstractVector{<:Int
     (; chain, r) = s
     K = getK(chain)
     rK = r[K]
-    x_linearind = _sample_noalloc(rng, exp(rx) for rx in rK)
+    logp = [rx for rx in rK]
+    logz = logsumexp(logp)
+    x_linearind = _sample_noalloc(rng, exp(logpx - logz) for logpx in logp)
     cartind = CartesianIndices(rK)
     for i in 1:K-1
         x[begin+i-1] = cartind[x_linearind][i]
