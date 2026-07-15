@@ -8,7 +8,8 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "API" => "api.md"
-    ]
+    ],
+    push_preview = true
 )
 
 deploydocs(
