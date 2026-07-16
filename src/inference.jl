@@ -57,7 +57,6 @@ function Distributions.fit_mle(::Type{KChainModel}, K::Integer, X::AbstractMatri
         expfi[iszero.(fKi) .&& (iszero.(gi) .&& iszero.(gip1))] .= 1
         expfi[iszero.(fKi) .&& (iszero.(gi) .⊻ iszero.(gip1))] .= 0
         fi = log.(expfi)
-        fi[isnan.(fi)] .= - Inf
         fi
     end
 
