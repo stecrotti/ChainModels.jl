@@ -33,30 +33,37 @@ function Distributions.fit_mle(::Type{KChainModel}, K::Integer, X::AbstractMatri
         qs=tuple(maximum(X, dims=2)...),
         empirical_frequencies = compute_empirical_Kmarginals(X, K; qs=qs))
 
-    function _f_left(fK, fKm1, i)
-        repeat(fKm1[i], outer=tuple(fill(1, ndims(fKm1[i]))..., size(fK[i])[end]))
-    end
-    function _f_right(fK, fKm1, i)
-        permutedims(repeat(fKm1[i+1], outer=tuple(fill(1, ndims(fKm1[i+1]))..., size(fK[i])[1])), 
-                    circshift(1:K, 1))
+    # reshape matrices so that matching indices are multiplying when broadcasting
+    # Ex: f1(x1, x2) * f2(x2,x3) can be done by either `_f_left(f1)` so that f1 becomes of size (1, span(x1), span(x2))
+    # or equivalently by `_f_right(f2)` so that f2 becomes of size (span(x2), spam(x3),1)
+    _f_left(f) = reshape(f, size(f)..., 1)
+    _f_right(f) = reshape(f, 1, size(f)...)
+
+    # computes log(f / sqrt(g * gp1)) handling 0/0 cases correctly
+    function combine_fg(f, g, gp1)
+        # 0/0 cases:
+        # 0 / sqrt(0*0) = 1
+        # 0 / sqrt(0*nonzero) = 0
+        exp_out = if iszero(f) && (iszero(g) && iszero(gp1))
+            one(f)
+        elseif iszero(f) && (iszero(g) ⊻ iszero(gp1))
+            zero(f)
+        else
+            f / sqrt(g * gp1)
+        end
+        return log(exp_out)
     end
 
     fK, fKm1 = empirical_frequencies
     f = map(enumerate(fK)) do (i, fKi)
         (gi, gip1) = if i == 1
-            1.0, _f_right(fK, fKm1, i)
+            1.0, _f_right(fKm1[i+1])
         elseif i == length(fK)
-            _f_left(fK, fKm1, i), 1.0
+            _f_left(fKm1[i]), 1.0
         else
-            _f_left(fK, fKm1, i), _f_right(fK, fKm1, i)
+            _f_left(fKm1[i]), _f_right(fKm1[i+1])
         end
-        expfi = fKi ./ sqrt.(gi .* gip1)
-        # 0/0 cases:
-        # 0 / sqrt(0*0) = 1
-        # 0 / sqrt(0*nonzero) = 0
-        expfi[iszero.(fKi) .&& (iszero.(gi) .&& iszero.(gip1))] .= 1
-        expfi[iszero.(fKi) .&& (iszero.(gi) .⊻ iszero.(gip1))] .= 0
-        fi = log.(expfi)
+        fi = combine_fg.(fKi, gi, gip1)
         fi
     end
 
